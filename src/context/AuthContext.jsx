@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
 
@@ -7,37 +7,50 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:5000');
-// Replaced useLocalStorage with useState for most user state
-  const [currentUser, setCurrentUser] = useLocalStorage('current_user', null);
+  
+  const [currentUser, setCurrentUser] = useState(null);
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load user data when user changes
+  const loadUserData = async (username) => {
+    try {
+      const res = await fetch(`${API_URL}/api/gpa/${username}`);
+      const data = await res.json();
+
+      console.log("Loaded user data:", data);
+
+      return data;
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // 💀 STEP 3: LOAD DATA ON PAGE REFRESH
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+
+    if (user) {
+      console.log("User logged in:", user);
+      setCurrentUser(user);
+      loadUserData(user).then((data) => {
+        setUserData(data?.gpaData || {});
+        setIsLoading(false);
+      });
+    } else {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // For Guest Users
   useEffect(() => {
     if (currentUser === 'guest') {
       const gData = localStorage.getItem('user_data_guest');
       setUserData(gData ? JSON.parse(gData) : null);
       setIsLoading(false);
-    } else if (currentUser) {
-      // Backend fetch
-      setIsLoading(true);
-      fetch(`${API_URL}/api/data/load/${currentUser}`, { cache: 'no-store' })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            setUserData(data.data);
-          } else {
-            console.error("Failed to load user data from cloud");
-          }
-        })
-        .catch(err => console.error(err))
-        .finally(() => setIsLoading(false));
-    } else {
-      setUserData(null);
-      setIsLoading(false);
     }
   }, [currentUser]);
 
+  // 🚀 STEP 2: CONNECT LOGIN
   const login = async (username, password) => {
     try {
       const res = await fetch(`${API_URL}/api/auth/login`, {
@@ -46,35 +59,55 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ username, password })
       });
       const data = await res.json();
+      
       if (data.success) {
+        localStorage.setItem("user", username); // 🔥 store session
         setCurrentUser(username);
+
+        const userDataResponse = await loadUserData(username);
+
+        // 👇 VERY IMPORTANT
+        setUserData(userDataResponse?.gpaData || {});
+
+        toast.success("Login successful!");
         return { success: true };
+      } else {
+        toast.error(data.error);
+        return { success: false, error: data.error };
       }
-      return { success: false, error: data.error };
     } catch(err) {
+      toast.error("Cannot connect to server.");
       return { success: false, error: 'Cannot connect to server.' };
     }
   };
 
+  // 🚀 STEP 1: CONNECT SIGNUP
   const signup = async (username, password) => {
     try {
-      const res = await fetch(`${API_URL}/api/auth/signup`, {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
       const data = await res.json();
+      
       if (data.success) {
+        localStorage.setItem("user", username);
         setCurrentUser(username);
+        toast.success("Signup successful!");
         return { success: true };
+      } else {
+        toast.error(data.error);
+        return { success: false, error: data.error };
       }
-      return { success: false, error: data.error };
     } catch(err) {
+      toast.error("Cannot connect to server.");
       return { success: false, error: 'Cannot connect to server.' };
     }
   };
 
   const logout = () => {
+    localStorage.removeItem("user");
     setCurrentUser(null);
     setUserData(null);
   };
@@ -84,24 +117,29 @@ export const AuthProvider = ({ children }) => {
   };
 
   const saveUserData = async (data) => {
-    if (!currentUser) return;
-    
     if (currentUser === 'guest') {
       localStorage.setItem('user_data_guest', JSON.stringify(data));
       setUserData(data);
       return;
     }
 
-    try {
-      const res = await fetch(`${API_URL}/api/data/save`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: currentUser, data })
-      });
-      const json = await res.json();
-      if (json.success) setUserData(json.data);
-    } catch(err) {
-      console.error(err);
+    console.log("🔥 SENDING GPA DATA:", data);
+
+    const res = await fetch(`${API_URL}/api/gpa/save-gpa`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: localStorage.getItem("user"),
+        gpaData: data
+      })
+    });
+
+    const result = await res.json();
+    console.log("🔥 SAVE RESPONSE:", result);
+    if (result.success) {
+      setUserData(data || {});
     }
   };
 

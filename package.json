@@ -13,19 +13,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "bcryptjs": "^3.0.3",
     "concurrently": "^9.2.1",
     "cors": "^2.8.6",
     "dotenv": "^17.4.1",
     "express": "^5.2.1",
     "lucide-react": "^1.7.0",
-    "mongodb-memory-server": "^11.1.0",
     "mongoose": "^9.4.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-router-dom": "^7.14.1",
-    "three": "^0.184.0"
+    "react-hot-toast": "^2.6.0",
+    "react-router-dom": "^7.14.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

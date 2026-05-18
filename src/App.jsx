@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { Toaster } from 'react-hot-toast';
 import Navbar from './components/Navbar';
 import LandingPage from './components/LandingPage';
 import AuthScreen from './components/AuthScreen';
@@ -41,6 +42,35 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <Router>
+          <Toaster 
+            position="top-right" 
+            reverseOrder={false}
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: 'var(--bg-soft)',
+                color: 'var(--text-main)',
+                border: '1px solid var(--card-border)',
+                fontFamily: "'Inter', sans-serif",
+                fontSize: '14px',
+                borderRadius: '12px',
+                padding: '12px 24px',
+                boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)',
+              },
+              success: {
+                iconTheme: {
+                  primary: 'var(--success)',
+                  secondary: 'var(--bg-soft)',
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: 'var(--error)',
+                  secondary: 'var(--bg-soft)',
+                },
+              },
+            }}
+          />
           <AppLayout />
         </Router>
       </AuthProvider>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { Plus, Trash2, UploadCloud, Loader2, ChevronDown, ChevronUp, Settings, Award, BarChart3, BookOpen, FlaskConical, Info, RotateCcw, Sparkles } from 'lucide-react';
 import { scanImageForSubjects } from '../utils/ocrParser';
 import AnimatedNumber from './AnimatedNumber';
@@ -118,10 +119,10 @@ export default function SemesterCalculator({ initialData, overallData, onChange,
         setTheorySubjects([...currentTheory, ...uniqueNewTheory]);
         setLabSubjects([...currentLabs, ...uniqueNewLabs]);
       } else {
-        alert("Could not detect any clear subjects or credits. Please ensure the screenshot contains formal core course codes and distinct credits clearly.");
+        toast.error("Could not detect any clear subjects or credits. Please ensure the screenshot contains formal core course codes and distinct credits clearly.");
       }
     } catch (err) {
-      alert("Error scanning image: " + err.message);
+      toast.error("Error scanning image: " + err.message);
     } finally {
       setIsScanning(false);
       setScanProgress(0);
