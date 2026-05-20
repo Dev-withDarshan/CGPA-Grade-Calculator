@@ -1,5 +1,5 @@
 /* ============================================
-   DASHBOARD — TOP NAV + CENTERED CONTENT
+   DASHBOARD — SINGLE NAVBAR + CENTERED CONTENT
    ============================================ */
 
 /* ─── Shell ─── */
@@ -18,119 +18,13 @@
   width: 100%;
 }
 
-/* ─── Top Sub-Navigation Bar ─── */
-.dashboard-topbar {
-  width: 100%;
-  background: var(--bg-surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border-color);
-  position: sticky;
-  top: 52px;
-  /* Set to stick exactly below the global navbar */
-  z-index: 100;
-}
-
-.dashboard-topbar-inner {
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 0 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 48px;
-  /* Reduced from 60px to save vertical height */
-  gap: 24px;
-}
-
-/* ─── Tabs ─── */
-.topbar-tabs {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.topbar-tab {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 18px;
-  border-radius: 10px;
-  font-weight: 500;
-  font-size: 14px;
-  color: var(--text-muted);
-  transition: all 0.25s ease;
-  white-space: nowrap;
-  position: relative;
-}
-
-.topbar-tab:hover {
-  color: var(--text-main);
-  background: var(--bg-input);
-}
-
-.topbar-tab.active {
-  color: white;
-  background: var(--primary);
-  box-shadow: 0 2px 12px var(--accent-glow);
-  font-weight: 600;
-}
-
-/* ─── Right Actions ─── */
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.topbar-user {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 14px 6px 6px;
-  border-radius: 12px;
-  background: var(--bg-input);
-  border: 1px solid var(--card-border);
-}
-
-.topbar-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #6366F1, #22D3EE);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 14px;
-  color: white;
-  text-transform: uppercase;
-  flex-shrink: 0;
-}
-
-.topbar-username {
-  font-weight: 600;
-  font-size: 13px;
-  color: var(--text-main);
-  text-transform: capitalize;
-}
-
-.topbar-save-btn {
-  padding: 8px 20px;
-  font-size: 13px;
-  border-radius: 10px;
-  gap: 6px;
-}
-
 /* ─── Main Content — Centered ─── */
 .dashboard-main {
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 20px 24px 40px;
-  /* Reduced from 40px 24px 60px to save vertical height */
+  padding: 16px 24px 40px;
   width: 100%;
 }
 
@@ -143,77 +37,10 @@
   width: 100%;
 }
 
-/* ─── Mobile Bottom Tab Bar ─── */
-.mobile-tab-bar {
-  display: none;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--bg-surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid var(--border-color);
-  padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
-  z-index: 200;
-  gap: 4px;
-}
-
-.mobile-tab {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 4px;
-  border-radius: 10px;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-muted);
-  transition: all 0.2s ease;
-}
-
-.mobile-tab.active {
-  color: var(--accent-color);
-  background: var(--accent-glow);
-  font-weight: 600;
-}
-
 /* ─── Responsive ─── */
 @media (max-width: 768px) {
-  .dashboard-topbar-inner {
-    padding: 0 16px;
-    height: 52px;
-  }
-
-  .topbar-tabs {
-    display: none;
-  }
-
-  .topbar-actions {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .mobile-tab-bar {
-    display: flex;
-  }
-
   .dashboard-main {
-    padding: 24px 16px 100px;
-  }
-}
-
-@media (max-width: 480px) {
-  .topbar-username {
-    display: none;
+    padding: 16px 16px 40px;
   }
 
-  .topbar-save-btn span {
-    display: none;
-  }
-
-  .topbar-save-btn {
-    padding: 8px 12px;
-  }
 }

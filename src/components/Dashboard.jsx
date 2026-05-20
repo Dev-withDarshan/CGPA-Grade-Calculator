@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useDashboardTab } from '../context/DashboardTabContext';
 import SemesterCalculator from './SemesterCalculator';
 import OverallCalculator from './OverallCalculator';
 import TargetCalculator from './TargetCalculator';
 import GradeSimulator from './GradeSimulator';
-import { Save, LayoutDashboard, History, Target, FlaskConical } from 'lucide-react';
 import './Dashboard.css';
 
 export default function Dashboard() {
   const { currentUser, logout, userData, saveUserData, isLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState('semester');
+  const { activeTab, setActiveTab, setOnSave, saveStatus, setSaveStatus } = useDashboardTab();
 
   // Local state to hold the current values of calculators before saving
   const [semesterData, setSemesterData] = useState(null);
   const [overallData, setOverallData] = useState(null);
   const [targetData, setTargetData] = useState(null);
-  const [saveStatus, setSaveStatus] = useState('');
 
   // Load user data on mount
   useEffect(() => {
@@ -51,6 +50,12 @@ export default function Dashboard() {
     setTimeout(() => setSaveStatus(''), 2000);
   };
 
+  // Register the save callback in the shared context
+  useEffect(() => {
+    setOnSave(() => handleSave);
+    return () => setOnSave(null);
+  }, [semesterData, overallData, targetData, setOnSave]);
+
   const handleAddToCGPA = (credits, gpa) => {
     if (!credits || credits <= 0) return;
 
@@ -74,47 +79,8 @@ export default function Dashboard() {
     setActiveTab('overall');
   };
 
-  const navItems = [
-    { key: 'semester', label: 'Semester GPA', icon: LayoutDashboard },
-    { key: 'overall', label: 'CGPA', icon: History },
-    { key: 'target', label: 'Target CGPA', icon: Target },
-    { key: 'simulator', label: 'What-If', icon: FlaskConical },
-  ];
-
   return (
     <div className="dashboard-shell">
-      {/* ── Top Sub-Navigation Bar ── */}
-      <div className="dashboard-topbar">
-        <div className="dashboard-topbar-inner">
-          {/* Left: Navigation Tabs */}
-          <div className="topbar-tabs">
-            {navItems.map(item => (
-              <button
-                key={item.key}
-                className={`topbar-tab ${activeTab === item.key ? 'active' : ''}`}
-                onClick={() => setActiveTab(item.key)}
-              >
-                <item.icon size={18} />
-                <span className="topbar-tab-label">{item.label}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Right: Save + User */}
-          <div className="topbar-actions">
-            {currentUser && currentUser !== 'guest' && (
-              <div className="topbar-user">
-                <div className="topbar-avatar">{currentUser.charAt(0).toUpperCase()}</div>
-                <span className="topbar-username">{currentUser}</span>
-              </div>
-            )}
-            <button className="btn-primary topbar-save-btn" onClick={handleSave}>
-              <Save size={16} />
-              <span>{saveStatus || 'Save to Cloud'}</span>
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* ── Centered Main Content ── */}
       <main className="dashboard-main">
@@ -149,20 +115,6 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
-
-      {/* ── Mobile Bottom Tab Bar ── */}
-      <div className="mobile-tab-bar">
-        {navItems.map(item => (
-          <button
-            key={item.key}
-            className={`mobile-tab ${activeTab === item.key ? 'active' : ''}`}
-            onClick={() => setActiveTab(item.key)}
-          >
-            <item.icon size={20} />
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </div>
     </div>
   );
 }

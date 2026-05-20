@@ -1,16 +1,22 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { LogIn, LogOut, LayoutDashboard, Sun, Moon } from 'lucide-react';
+import { useDashboardTab } from '../context/DashboardTabContext';
+import { LogIn, LogOut, LayoutDashboard, Sun, Moon, ChevronDown, Menu, X, Save } from 'lucide-react';
 import { MagneticButton } from './Spotlight';
 import './Navbar.css';
 
 export default function Navbar() {
   const { currentUser, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { activeTab, setActiveTab, onSave, saveStatus } = useDashboardTab();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   const handleLogoClick = () => {
     navigate('/');
@@ -21,15 +27,71 @@ export default function Navbar() {
     navigate('/');
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setDropdownOpen(false);
+  }, [location.pathname]);
+
+  const navTabs = [
+    { key: 'semester', label: 'Semester GPA' },
+    { key: 'overall', label: 'CGPA' },
+    { key: 'target', label: 'Target CGPA' },
+    { key: 'simulator', label: 'What-If' },
+  ];
+
+  const handleTabClick = (tab) => {
+    setActiveTab(tab.key);
+    if (location.pathname !== '/dashboard') {
+      navigate('/dashboard');
+    }
+    setMobileMenuOpen(false);
+  };
+
+  const isOnDashboard = location.pathname === '/dashboard';
+
   return (
-    <nav className="global-navbar glass-panel">
-      <div className="navbar-container">
-        <div className="nav-brand-clickable" onClick={handleLogoClick}>
-          <img src="/Logo.png" alt="ScoreLoom Logo" className="navbar-logo" />
-          <span className="brand-text">Score<span className="smooth-gradient-text">Loom</span></span>
+    <nav className="navbar-premium">
+      <div className="navbar-inner">
+        {/* ── LEFT: Logo ── */}
+        <div className="navbar-left">
+          <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+          <div className="nav-brand-clickable" onClick={handleLogoClick}>
+            <img src="/Logo.png" alt="ScoreLoom Logo" className="navbar-logo" />
+            <span className="brand-text">Score<span className="smooth-gradient-text">Loom</span></span>
+          </div>
         </div>
 
-        <div className="nav-actions-group">
+        {/* ── CENTER: Navigation Tabs ── */}
+        <div className="navbar-center">
+          <div className="nav-tabs-container">
+            {navTabs.map((tab) => (
+              <button
+                key={tab.key}
+                className={`nav-tab ${isOnDashboard && activeTab === tab.key ? 'nav-tab-active' : ''}`}
+                onClick={() => handleTabClick(tab)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── RIGHT: Actions ── */}
+        <div className="navbar-right">
           {/* Theme Toggle */}
           <button
             className="theme-toggle-btn"
@@ -42,32 +104,54 @@ export default function Navbar() {
 
           {currentUser ? (
             <div className="auth-actions-logged-in">
-              {currentUser !== 'guest' && (
+              {currentUser !== 'guest' && onSave && (
                 <MagneticButton
-                  className="btn-primary"
-                  onClick={() => navigate('/dashboard')}
-                  style={{ padding: '8px 16px', marginRight: '10px' }}
+                  className="btn-primary navbar-save-btn"
+                  onClick={onSave}
                   strength={0.28}
                   maxShift={8}
                 >
-                  <LayoutDashboard size={16} /> <span className="hide-mobile">Dashboard</span>
+                  <Save size={16} /> <span className="hide-mobile">{saveStatus || 'Save to Cloud'}</span>
                 </MagneticButton>
               )}
 
               {currentUser !== 'guest' ? (
-                <>
-                  <div className="avatar-small" title={currentUser}>
-                    {currentUser.charAt(0).toUpperCase()}
-                  </div>
-                  <MagneticButton
-                    className="btn-secondary btn-nav-logout"
-                    onClick={handleLogout}
-                    strength={0.28}
-                    maxShift={8}
+                <div className="avatar-dropdown-wrapper" ref={dropdownRef}>
+                  <button
+                    className="avatar-trigger"
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    aria-label="Profile menu"
                   >
-                    <LogOut size={16} /> <span className="hide-mobile">Log out</span>
-                  </MagneticButton>
-                </>
+                    <div className="avatar-small" title={currentUser}>
+                      {currentUser.charAt(0).toUpperCase()}
+                    </div>
+                    <ChevronDown size={14} className={`avatar-chevron ${dropdownOpen ? 'avatar-chevron-open' : ''}`} />
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {dropdownOpen && (
+                    <div className="avatar-dropdown animate-scale-in">
+                      <div className="dropdown-user-info">
+                        <div className="dropdown-avatar">
+                          {currentUser.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="dropdown-user-details">
+                          <span className="dropdown-user-name">{currentUser}</span>
+                          <span className="dropdown-user-email">{currentUser}@scoreloom.app</span>
+                        </div>
+                      </div>
+                      <div className="dropdown-divider" />
+                      <button className="dropdown-item" onClick={() => { navigate('/dashboard'); setDropdownOpen(false); }}>
+                        <LayoutDashboard size={16} />
+                        <span>Dashboard</span>
+                      </button>
+                      <button className="dropdown-item dropdown-item-danger" onClick={() => { handleLogout(); setDropdownOpen(false); }}>
+                        <LogOut size={16} />
+                        <span>Logout</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <MagneticButton
                   className="btn-secondary btn-nav-logout"
@@ -95,6 +179,21 @@ export default function Navbar() {
           )}
         </div>
       </div>
+
+      {/* ── Mobile Slide-Down Nav ── */}
+      {mobileMenuOpen && (
+        <div className="mobile-nav-drawer animate-fade-in">
+          {navTabs.map((tab) => (
+            <button
+              key={tab.key}
+              className={`mobile-nav-tab ${isOnDashboard && activeTab === tab.key ? 'mobile-nav-tab-active' : ''}`}
+              onClick={() => handleTabClick(tab)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
     </nav>
   );
 }
