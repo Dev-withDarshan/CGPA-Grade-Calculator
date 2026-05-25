@@ -1,12 +1,11 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-// ✅ Schema defined FIRST
 const UserSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
-    unique: true,
+    unique: true,   // ✅ keep this
     trim: true
   },
   password: {
@@ -19,11 +18,6 @@ const UserSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-// ✅ Index defined AFTER the schema
-UserSchema.index(
-  { username: 1 },
-  { unique: true}
-);
 
 UserSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
