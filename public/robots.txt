@@ -1,4 +1,32 @@
+# Allow all robots to crawl GraVITal
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /backend/
+Disallow: /.env
+Disallow: /node_modules/
+Disallow: /.git/
 
-Sitemap: https://gradevity.vercel.app/sitemap.xml
+# Specific directives for Googlebot
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /backend/
+Crawl-delay: 0
+
+# Specific directives for Bingbot
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /backend/
+Crawl-delay: 1
+
+# Block bad bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+# Sitemap location
+Sitemap: https://gravital.vercel.app/sitemap.xml

@@ -1,0 +1,4 @@
+Contact: mailto:dev.darshan@gmail.com
+Expires: 2026-12-31T23:59:59.000Z
+PreferredLanguages: en
+Canonical: https://gravital.vercel.app/.well-known/security.txt
