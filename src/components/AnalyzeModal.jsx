@@ -21,6 +21,7 @@ export default function AnalyzeModal({ semesters, onClose }) {
   // Target inputs
   const [targetCGPA, setTargetCGPA] = useState(9.0);
   const [remainingCredits, setRemainingCredits] = useState(20);
+  const [selectedGrade, setSelectedGrade] = useState(null);
 
   const handleCGPAChange = (e) => {
     let val = e.target.value;
@@ -70,6 +71,50 @@ export default function AnalyzeModal({ semesters, onClose }) {
   }, [gpas, avgGPA]);
 
   const consistency = useMemo(() => getConsistencyDetails(stdDev), [stdDev]);
+
+  // Compute Grade Counts from active, detailed entry semesters
+  const gradeCounts = useMemo(() => {
+    const counts = { S: 0, A: 0, B: 0, C: 0, D: 0, F: 0 };
+    let hasDetailedSems = false;
+
+    semesters.forEach(sem => {
+      if (sem.isIncluded !== false && sem.mode === 'detailed') {
+        hasDetailedSems = true;
+        if (sem.subjects && Array.isArray(sem.subjects)) {
+          sem.subjects.forEach(sub => {
+            const grade = sub.grade?.toUpperCase();
+            if (counts[grade] !== undefined) {
+              counts[grade] += 1;
+            }
+          });
+        }
+      }
+    });
+
+    return { counts, hasDetailedSems };
+  }, [semesters]);
+
+  // Compute detailed subjects for selected grade
+  const subjectsWithSelectedGrade = useMemo(() => {
+    if (!selectedGrade) return [];
+    const list = [];
+    semesters.forEach(sem => {
+      if (sem.isIncluded !== false && sem.mode === 'detailed') {
+        if (sem.subjects && Array.isArray(sem.subjects)) {
+          sem.subjects.forEach(sub => {
+            if (sub.grade?.toUpperCase() === selectedGrade) {
+              list.push({
+                semesterName: sem.name,
+                subjectName: sub.name || 'Untitled Subject',
+                credits: sub.credits || 0
+              });
+            }
+          });
+        }
+      }
+    });
+    return list;
+  }, [semesters, selectedGrade]);
 
   // Target CGPA Projection Logic
   const projection = useMemo(() => {
@@ -123,24 +168,90 @@ export default function AnalyzeModal({ semesters, onClose }) {
             {/* Section 1: GPA Summary */}
             <div className="modal-flat-section">
               <h4 className="modal-section-title">GPA Summary</h4>
-              <div className="modal-flat-stats">
-                <div className="modal-stat-row">
-                  <span className="modal-stat-label">Average GPA</span>
-                  <span className="modal-stat-val">{avgGPA.toFixed(2)}</span>
-                </div>
-                <div className="modal-stat-row">
-                  <span className="modal-stat-label">Highest GPA</span>
-                  <span className="modal-stat-val text-success">{highestGPA.toFixed(2)}</span>
-                </div>
-                <div className="modal-stat-row">
-                  <span className="modal-stat-label">Lowest GPA</span>
-                  <span className="modal-stat-val text-error">{lowestGPA.toFixed(2)}</span>
-                </div>
-                <div className="modal-stat-row">
-                  <span className="modal-stat-label">Total Credits</span>
-                  <span className="modal-stat-val">{totalCredits}</span>
-                </div>
-              </div>
+              <table className="analysis-summary-table">
+                <thead>
+                  <tr>
+                    <th>Average GPA</th>
+                    <th>Highest GPA</th>
+                    <th>Lowest GPA</th>
+                    <th>Total Credits</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{avgGPA.toFixed(2)}</td>
+                    <td className="text-success">{highestGPA.toFixed(2)}</td>
+                    <td className="text-error">{lowestGPA.toFixed(2)}</td>
+                    <td>{totalCredits}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className="modal-divider"></div>
+
+            {/* Section: Grade Distribution */}
+            <div className="modal-flat-section">
+              <h4 className="modal-section-title">Grade Distribution</h4>
+              {gradeCounts.hasDetailedSems ? (
+                <>
+                  <div className="grade-distribution-grid">
+                    {Object.entries(gradeCounts.counts).map(([grade, count]) => {
+                      const isSelectable = count > 0;
+                      const isActive = selectedGrade === grade;
+                      const cardClass = `grade-badge-card${isSelectable ? ' selectable' : ' disabled-selection'}${isActive ? ' active-selection' : ''}`;
+                      
+                      return (
+                        <div 
+                          key={grade} 
+                          className={cardClass}
+                          onClick={() => {
+                            if (!isSelectable) return;
+                            setSelectedGrade(isActive ? null : grade);
+                          }}
+                          title={isSelectable ? `Click to see subjects with grade ${grade}` : `No subjects with grade ${grade}`}
+                        >
+                          <span className={`grade-badge-label grade-${grade.toLowerCase()}`}>{grade}</span>
+                          <span className="grade-badge-count">{count}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {selectedGrade && (
+                    <div className="grade-details-panel">
+                      <div className="grade-details-header">
+                        <span className="grade-details-title">
+                          Subjects with Grade <strong className={`grade-details-badge grade-${selectedGrade.toLowerCase()}`}>{selectedGrade}</strong>
+                        </span>
+                        <button 
+                          className="grade-details-close" 
+                          onClick={() => setSelectedGrade(null)}
+                        >
+                          Clear selection
+                        </button>
+                      </div>
+                      {subjectsWithSelectedGrade.length > 0 ? (
+                        <div className="grade-details-list">
+                          {subjectsWithSelectedGrade.map((item, idx) => (
+                            <div key={idx} className="grade-details-item">
+                              <span className="grade-details-sem">{item.semesterName}</span>
+                              <span className="grade-details-sub">{item.subjectName}</span>
+                              <span className="grade-details-credits">{item.credits} Credits</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="grade-details-empty">No subjects found with this grade.</p>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="grade-distribution-empty">
+                  No detailed semesters found. Switch a semester to "Detailed Entry" to view grade distribution.
+                </p>
+              )}
             </div>
 
             <div className="modal-divider"></div>
@@ -163,40 +274,6 @@ export default function AnalyzeModal({ semesters, onClose }) {
               )}
 
               <div className={isGuest ? "blurred-content" : ""}>
-                {/* Section 2: Consistency */}
-                <div className="modal-flat-section">
-                  <h4 className="modal-section-title">Consistency</h4>
-                  <div className="consistency-section">
-                    <div className="consistency-ring-wrapper">
-                      <svg width="60" height="60" viewBox="0 0 60 60" className="consistency-ring">
-                        <circle cx="30" cy="30" r="22" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="4" />
-                        <circle 
-                          cx="30" 
-                          cy="30" 
-                          r="22" 
-                          fill="none" 
-                          stroke={isGuest ? "#8b5cf6" : consistency.color} 
-                          strokeWidth="4"
-                          strokeDasharray={2 * Math.PI * 22}
-                          strokeDashoffset={isGuest ? 2 * Math.PI * 22 * 0.6 : 2 * Math.PI * 22 * (1 - consistency.score / 100)}
-                          strokeLinecap="round"
-                          transform="rotate(-90 30 30)"
-                        />
-                        <text x="30" y="34" textAnchor="middle" fill="var(--text-main)" fontSize="10" fontWeight="800">
-                          {isGuest ? "??" : `${consistency.score}%`}
-                        </text>
-                      </svg>
-                    </div>
-                    <div className="consistency-details">
-                      <span className="consistency-badge" style={{ color: consistency.color, background: `${consistency.color}20` }}>
-                        {consistency.label}
-                      </span>
-                      <p className="consistency-msg">{consistency.msg}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="modal-divider"></div>
 
                 {/* Section 3: Target Projection */}
                 {remainingCredits >= 0 && (

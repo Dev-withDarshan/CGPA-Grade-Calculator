@@ -14,6 +14,10 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     sparse: true // Allows multiple users without an email (old users)
   },
+  profilePhoto: {
+    type: String,
+    default: ""
+  },
   password: {
     type: String,
     required: true
@@ -21,6 +25,24 @@ const UserSchema = new mongoose.Schema({
   gpaData: {
     type: mongoose.Schema.Types.Mixed,
     default: null
+  },
+  scoreFlow: {
+    gradeTable: [{
+      code: String,
+      title: String,
+      credits: Number,
+      grade: String,
+      type: String,
+      category: String,
+      distribution: String
+    }],
+    cgpa: Number,
+    originalCgpa: Number,
+    totalCredits: Number,
+    gradedCredits: Number,
+    ngcrCredits: Number,
+    excludedCredits: Number,
+    updatedAt: Date
   }
 }, { 
   timestamps: true,

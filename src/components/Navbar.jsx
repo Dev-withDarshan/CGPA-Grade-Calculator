@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useDashboardTab } from '../context/DashboardTabContext';
-import { LogIn, LogOut, LayoutDashboard, Sun, Moon, ChevronDown, Menu, X, Save, User } from 'lucide-react';
+import { LogIn, LogOut, LayoutDashboard, Sun, Moon, ChevronDown, Menu, X, Save, User, TrendingUp } from 'lucide-react';
 import { MagneticButton } from './Spotlight';
 import { capitalizeName } from '../utils/helpers';
 import './Navbar.css';
@@ -158,13 +158,17 @@ export default function Navbar() {
                         </div>
                         <div className="dropdown-user-details">
                           <span className="dropdown-user-name">{capitalizeName(profileData.name || currentUser)}</span>
-                          <span className="dropdown-user-email">{profileData.email || `${currentUser}@gmail.com`}</span>
+                          <span className="dropdown-user-email">{profileData.email || `${currentUser}@vitstudent.ac.in`}</span>
                         </div>
                       </div>
                       <div className="dropdown-divider" />
                       <button className="dropdown-item" onClick={() => { navigate('/profile'); setDropdownOpen(false); }}>
                         <User size={16} />
                         <span>Profile</span>
+                      </button>
+                      <button className="dropdown-item" onClick={() => { navigate('/score-flow'); setDropdownOpen(false); }}>
+                        <TrendingUp size={16} />
+                        <span>Score Flow</span>
                       </button>
                       <button className="dropdown-item dropdown-item-danger" onClick={() => { handleLogout(); setDropdownOpen(false); }}>
                         <LogOut size={16} />

@@ -81,13 +81,15 @@ export default function ActionBar({ semesters, onAddSemester, onSetSemesters, on
         <button className="action-btn btn-add-semester" onClick={onAddSemester}>
           <Plus size={16} /> Add Semester
         </button>
-        <button 
-          className={`action-btn btn-autofill-typical ${!isDefaultState ? 'disabled' : ''}`} 
-          onClick={handleAutoFill}
-          title={!isDefaultState ? "Clear semesters to auto-fill mock data" : "Auto-fill typical data"}
-        >
-          <Zap size={16} /> Auto-Fill Typical
-        </button>
+        {isDefaultState && (
+          <button 
+            className="action-btn btn-autofill-typical" 
+            onClick={handleAutoFill}
+            title="Auto-fill typical data"
+          >
+            <Zap size={16} /> Auto-Fill Typical
+          </button>
+        )}
         <button className="action-btn btn-analyze-perf" onClick={onOpenAnalysis}>
           <BarChart2 size={16} /> Analyze Performance
         </button>

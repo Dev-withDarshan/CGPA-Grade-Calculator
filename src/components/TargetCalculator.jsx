@@ -19,7 +19,7 @@ const ProgressRing = ({ value, max = 10, size = 200, strokeWidth = 10, isImpossi
       <circle
         cx={size / 2} cy={size / 2} r={radius}
         fill="none"
-        stroke="rgba(255,255,255,0.06)"
+        stroke="var(--cgpa-track-color, rgba(255, 255, 255, 0.06))"
         strokeWidth={strokeWidth}
       />
       {/* Progress arc */}

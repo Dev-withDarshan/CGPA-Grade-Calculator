@@ -97,6 +97,7 @@
   --spot-dim-layer-inner: rgba(0, 0, 0, 0.18);
   --spot-highlight-1: rgba(99, 102, 241, 0.08);
   --spot-highlight-2: rgba(99, 102, 241, 0.02);
+  --cgpa-track-color: rgba(255, 255, 255, 0.08);
 }
 
 /* ─── LIGHT MODE ─── */
@@ -191,6 +192,7 @@
   --spot-dim-layer-inner: rgba(255, 255, 255, 0.08);
   --spot-highlight-1: rgba(79, 70, 229, 0.04);
   --spot-highlight-2: rgba(79, 70, 229, 0.01);
+  --cgpa-track-color: rgba(0, 0, 0, 0.08);
 }
 
 [data-theme="light"] body {

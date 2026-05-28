@@ -11,6 +11,7 @@ import Dashboard from './components/Dashboard';
 import Profile from './components/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 import ParticleBackground from './components/ParticleBackground';
+import ScoreFlow from './components/ScoreFlow';
 
 // Layout wrapper to easily include Navbar and global background on all pages
 const AppLayout = () => {
@@ -38,6 +39,14 @@ const AppLayout = () => {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/score-flow" 
+            element={
+              <ProtectedRoute>
+                <ScoreFlow />
               </ProtectedRoute>
             } 
           />

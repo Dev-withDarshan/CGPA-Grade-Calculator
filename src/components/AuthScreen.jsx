@@ -8,7 +8,7 @@ import './AuthScreen.css';
 export default function AuthScreen() {
   useEffect(() => {
     if (window.location.pathname === "/login") {
-      localStorage.removeItem("user");
+      localStorage.removeItem("token");
     }
   }, []);
   const [isLogin, setIsLogin] = useState(true);
