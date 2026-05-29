@@ -61,6 +61,9 @@ export default function LandingPage() {
 
   return (
     <>
+      {/* ─── LANDING PAGE BACKGROUND IMAGE ─── */}
+      <div className="landing-page-bg" aria-hidden="true" />
+
       <div className="landing-container animate-fade-in">
 
         {/* Hero Section */}

@@ -16,7 +16,7 @@ import ScoreFlow from './components/ScoreFlow';
 // Layout wrapper to easily include Navbar and global background on all pages
 const AppLayout = () => {
   const location = useLocation();
-  const showParticles = location.pathname === '/' || location.pathname === '/login';
+  const showParticles = location.pathname === '/';
   const showNavbar = location.pathname !== '/login';
 
   return (
