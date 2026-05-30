@@ -22,6 +22,11 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  lastLogin: {
+    type: Date,
+    default: Date.now,
+    expires: 31536000 // MongoDB TTL index: automatically deletes document after 1 year (in seconds) of inactivity
+  },
   gpaData: {
     type: mongoose.Schema.Types.Mixed,
     default: null

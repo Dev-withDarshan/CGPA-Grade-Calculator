@@ -17,7 +17,7 @@ import ScoreFlow from './components/ScoreFlow';
 const AppLayout = () => {
   const location = useLocation();
   const showParticles = location.pathname === '/';
-  const showNavbar = true;
+  const showNavbar = location.pathname !== '/login';
 
   return (
     <>

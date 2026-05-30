@@ -503,16 +503,35 @@ export const AuthProvider = ({ children }) => {
     }
   }, [API]);
 
+  // ── Delete Account (Protected — token auth, requires password) ────────────
+  const deleteAccount = useCallback(async (password) => {
+    try {
+      const res = await authFetch(`${API}/api/profile/delete-account`, {
+        method: 'DELETE',
+        body: JSON.stringify({ password })
+      });
+      const data = await res.json();
+      if (data.success) {
+        logout(); // Clear all local state and tokens upon successful deletion
+        return { success: true };
+      }
+      return { success: false, error: data.message || data.error || 'Failed to delete account' };
+    } catch (err) {
+      console.error('Delete Account Error:', err);
+      return { success: false, error: 'Cannot connect to server.' };
+    }
+  }, [API, logout]);
+
   const contextValue = useMemo(() => ({
     currentUser, isGuest, login, signup, logout, loginAsGuest,
     userData, saveUserData, isLoading,
     profileData, updateProfileData, uploadProfilePhoto,
-    scoreFlowData, saveScoreFlowData, changePassword
+    scoreFlowData, saveScoreFlowData, changePassword, deleteAccount
   }), [
     currentUser, isGuest, login, signup, logout, loginAsGuest,
     userData, saveUserData, isLoading,
     profileData, updateProfileData, uploadProfilePhoto,
-    scoreFlowData, saveScoreFlowData, changePassword
+    scoreFlowData, saveScoreFlowData, changePassword, deleteAccount
   ]);
 
   return (

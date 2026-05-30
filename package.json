@@ -10,7 +10,8 @@
     "start": "node backend/server.js",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cleanup:images": "node backend/imagekitCleanup.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

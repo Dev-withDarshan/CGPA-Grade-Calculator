@@ -31,7 +31,7 @@ const BRANCH_OPTIONS = [
 const YEAR_OPTIONS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
 
 export default function Profile() {
-  const { profileData, updateProfileData, uploadProfilePhoto, currentUser, isGuest, userData, changePassword } = useAuth();
+  const { profileData, updateProfileData, uploadProfilePhoto, currentUser, isGuest, userData, changePassword, deleteAccount } = useAuth();
   const { theme, toggleTheme, selectTheme } = useTheme();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -60,6 +60,11 @@ export default function Profile() {
   const [showPasswordNew, setShowPasswordNew] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+
+  /* ── Local form state (delete account card) ── */
+  const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
 
   /* ── Editing & Preview Toggles ── */
   const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -252,6 +257,31 @@ export default function Profile() {
       setIsChangePasswordOpen(false);
     } else {
       toast.error(res.error || "Failed to update password");
+    }
+  };
+
+  const handleDeleteAccount = async (e) => {
+    if (e) e.preventDefault();
+    if (!deletePassword) {
+      toast.error("Please enter your password to confirm");
+      return;
+    }
+    
+    if (isGuest) {
+      toast.error("Guest accounts cannot be deleted");
+      return;
+    }
+
+    const loadingToast = toast.loading("Deleting account...");
+    const res = await deleteAccount(deletePassword);
+    toast.dismiss(loadingToast);
+
+    if (res.success) {
+      toast.success("Account deleted successfully");
+      setIsDeleteAccountOpen(false);
+      navigate('/login');
+    } else {
+      toast.error(res.error || "Failed to delete account");
     }
   };
 
@@ -877,7 +907,7 @@ export default function Profile() {
               <button
                 type="button"
                 className="btn-delete-account-styled"
-                onClick={() => toast.error("Account deletion is disabled for demo purposes.")}
+                onClick={() => setIsDeleteAccountOpen(true)}
               >
                 Delete
               </button>
@@ -1089,6 +1119,74 @@ export default function Profile() {
                 </button>
                 <button type="submit" className="prof-pwd-btn-submit">
                   <Lock size={14} /> Update Password
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* ═══ DELETE ACCOUNT MODAL ═══ */}
+      {isDeleteAccountOpen && createPortal(
+        <div className="prof-pwd-modal-backdrop" onClick={() => {
+          setIsDeleteAccountOpen(false);
+          setDeletePassword('');
+        }}>
+          <div className="prof-pwd-modal-container" onClick={(e) => e.stopPropagation()}>
+            <button className="prof-pwd-modal-close" onClick={() => {
+              setIsDeleteAccountOpen(false);
+              setDeletePassword('');
+            }} aria-label="Close modal">
+              <X size={18} />
+            </button>
+
+            <div className="prof-pwd-modal-header-row" style={{ alignItems: 'flex-start' }}>
+              <div className="prof-setting-icon-wrapper icon-theme-red active" style={{ marginTop: '4px' }}>
+                <Trash2 size={24} />
+              </div>
+              <div className="prof-pwd-modal-header-text">
+                <h2 style={{ color: '#ef4444' }}>Delete Account</h2>
+                <p>This action is irreversible. All your data, including profile info, GPA history, and settings will be permanently deleted.</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleDeleteAccount} className="prof-pwd-modal-form">
+              <div className="prof-field">
+                <label className="prof-label">Confirm Password</label>
+                <div className="prof-input-wrap">
+                  <Lock size={15} className="prof-input-icon" />
+                  <input
+                    type={showDeletePassword ? "text" : "password"}
+                    className="prof-input"
+                    value={deletePassword}
+                    onChange={(e) => setDeletePassword(e.target.value)}
+                    placeholder="Enter your password to confirm"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle-btn"
+                    onClick={() => setShowDeletePassword(!showDeletePassword)}
+                  >
+                    {showDeletePassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="prof-pwd-modal-actions" style={{ marginTop: '24px' }}>
+                <button
+                  type="button"
+                  className="prof-pwd-btn-cancel"
+                  onClick={() => {
+                    setIsDeleteAccountOpen(false);
+                    setDeletePassword('');
+                  }}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="prof-pwd-btn-submit" style={{ background: '#ef4444', borderColor: '#f87171', color: '#fff' }}>
+                  <Trash2 size={14} /> Delete Permanently
                 </button>
               </div>
             </form>

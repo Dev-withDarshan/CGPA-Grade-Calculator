@@ -75,6 +75,10 @@ router.post('/login', authLimiter, async (req, res) => {
     if (!isMatch)
       return res.status(401).json({ error: 'Incorrect password.' });
 
+    // Update lastLogin timestamp to prevent inactivity expiration
+    user.lastLogin = Date.now();
+    await user.save();
+
     const token = generateToken(user._id);
 
     res.json({

@@ -70,4 +70,63 @@ router.get('/me', authMiddleware, async (req, res) => {
   }
 });
 
+// DELETE /api/profile/delete-account — Protected, deletes user account and related data
+router.delete('/delete-account', authMiddleware, async (req, res) => {
+  try {
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({
+        success: false,
+        message: "Password is required"
+      });
+    }
+
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    const isMatch = await user.comparePassword(password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid password"
+      });
+    }
+
+    // Attempt to delete profile photo from ImageKit if it exists
+    if (user.profilePhoto) {
+      try {
+        const imageKit = getImageKit();
+        // Look up the file by name
+        const files = await imageKit.listFiles({
+          searchQuery: `name="profile_${user._id}.jpg"`
+        });
+        
+        if (files && files.length > 0) {
+          await imageKit.deleteFile(files[0].fileId);
+          console.log(`✅ Deleted profile photo from ImageKit for user ${req.userId}`);
+        }
+      } catch (imgErr) {
+        console.error('ImageKit Deletion Error (non-fatal):', imgErr);
+        // Continue with account deletion even if imagekit deletion fails
+      }
+    }
+
+    // Delete the user document from MongoDB (this also removes embedded gpaData and scoreFlow data)
+    await User.findByIdAndDelete(req.userId);
+
+    // Placeholder for future external related records (e.g. if Stats/Activity models are created)
+    // await FutureExternalModel.deleteMany({ userId: req.userId });
+
+    console.log(`🗑️ Account deleted successfully for user ${req.userId}`);
+    res.json({ success: true, message: 'Account deleted successfully' });
+  } catch (err) {
+    console.error('Delete Account Error:', err);
+    res.status(500).json({ success: false, message: 'Failed to delete account.' });
+  }
+});
+
 export default router;
