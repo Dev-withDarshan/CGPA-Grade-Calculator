@@ -599,3 +599,118 @@ button {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary);
 }
+
+/* ── Global Footer ── */
+.prof-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 14px 0;
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  width: 100%;
+  max-width: 950px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+[data-theme="light"] .prof-footer {
+  border-top-color: #cbd5e1;
+  color: #64748b;
+}
+
+.prof-footer-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.prof-footer-links a {
+  color: rgba(255, 255, 255, 0.4);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+[data-theme="light"] .prof-footer-links a {
+  color: #64748b;
+}
+
+.prof-footer-links a:hover {
+  color: #c084fc;
+}
+
+[data-theme="light"] .prof-footer-links a:hover {
+  color: #7c3aed;
+}
+
+.prof-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.prof-footer-socials {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prof-social-link {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.4);
+  transition: all 0.25s ease;
+}
+
+[data-theme="light"] .prof-social-link {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #64748b;
+}
+
+.prof-social-link:hover {
+  background: rgba(124, 58, 237, 0.1);
+  border-color: rgba(124, 58, 237, 0.3);
+  color: #c084fc;
+  transform: translateY(-1.5px);
+}
+
+[data-theme="light"] .prof-social-link:hover {
+  color: #7c3aed;
+}
+
+/* ── Responsive Footer ── */
+@media (max-width: 768px) {
+  .prof-footer {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .prof-footer-right {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+/* ── Auth Screen Footer Layout ── */
+.auth-right-panel .prof-footer {
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+  max-width: 100%;
+  border-top: none; /* Clean separation without border on login card */
+}
+
+.auth-right-panel .prof-footer-right {
+  flex-direction: column;
+  gap: 12px;
+}

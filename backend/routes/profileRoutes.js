@@ -28,14 +28,42 @@ router.post('/upload-photo', authMiddleware, async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: 'User not found.' });
 
+    // Clean up old profile photo from ImageKit if it exists
+    if (user.profilePhotoFileId) {
+      try {
+        await getImageKit().deleteFile(user.profilePhotoFileId);
+        console.log(`✅ Deleted old profile photo (File ID: ${user.profilePhotoFileId}) from ImageKit`);
+      } catch (imgErr) {
+        console.error('ImageKit File ID Deletion Error (non-fatal):', imgErr);
+      }
+    } else if (user.profilePhoto) {
+      // Fallback for legacy users who don't have a profilePhotoFileId stored yet
+      try {
+        const imageKit = getImageKit();
+        const files = await imageKit.listFiles({
+          searchQuery: `name : "profile_${user._id}"`
+        });
+        
+        if (files && files.length > 0) {
+          for (const f of files) {
+            await imageKit.deleteFile(f.fileId);
+            console.log(`✅ Deleted legacy profile photo ${f.name} from ImageKit`);
+          }
+        }
+      } catch (imgErr) {
+        console.error('ImageKit Legacy Deletion Error (non-fatal):', imgErr);
+      }
+    }
+
     const uploadResponse = await getImageKit().upload({
       file,
       fileName: `profile_${user._id}.jpg`,
-      useUniqueFileName: false,
+      useUniqueFileName: true,
       folder: '/gravital/profiles/'
     });
 
     user.profilePhoto = uploadResponse.url;
+    user.profilePhotoFileId = uploadResponse.fileId;
     await user.save();
 
     console.log(`✅ Profile photo uploaded for user ${req.userId}`);
@@ -51,7 +79,7 @@ router.get('/me', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(
       req.userId,
-      { profilePhoto: 1, email: 1, username: 1, createdAt: 1 }
+      { profilePhoto: 1, email: 1, username: 1, createdAt: 1, profile: 1 }
     );
     if (!user) return res.status(404).json({ error: 'User not found.' });
 
@@ -61,12 +89,51 @@ router.get('/me', authMiddleware, async (req, res) => {
         profilePhoto: user.profilePhoto || '',
         email: user.email || '',
         username: user.username,
-        memberSince: user.createdAt
+        memberSince: user.createdAt,
+        name: user.profile?.name || '',
+        branch: user.profile?.branch || '',
+        year: user.profile?.year || '',
+        targetCGPA: user.profile?.targetCGPA || '',
+        gradingSystem: user.profile?.gradingSystem || 'VIT Grading',
+        emailNotifications: user.profile?.emailNotifications !== undefined ? user.profile.emailNotifications : true,
+        twoFactorEnabled: user.profile?.twoFactorEnabled !== undefined ? user.profile.twoFactorEnabled : true
       }
     });
   } catch (err) {
     console.error('Load Profile Error:', err);
     res.status(500).json({ error: 'Failed to load profile.' });
+  }
+});
+
+// POST /api/profile/update — Protected, updates user profile details
+router.post('/update', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+
+    if (!user.profile) {
+      user.profile = {};
+    }
+
+    const { name, branch, year, targetCGPA, gradingSystem, emailNotifications, twoFactorEnabled } = req.body;
+
+    if (name !== undefined) user.profile.name = name;
+    if (branch !== undefined) user.profile.branch = branch;
+    if (year !== undefined) user.profile.year = year;
+    if (targetCGPA !== undefined) user.profile.targetCGPA = targetCGPA;
+    if (gradingSystem !== undefined) user.profile.gradingSystem = gradingSystem;
+    if (emailNotifications !== undefined) user.profile.emailNotifications = emailNotifications;
+    if (twoFactorEnabled !== undefined) user.profile.twoFactorEnabled = twoFactorEnabled;
+
+    await user.save();
+    res.json({
+      success: true,
+      message: 'Profile updated successfully.',
+      profile: user.profile
+    });
+  } catch (err) {
+    console.error('Update Profile Details Error:', err);
+    res.status(500).json({ error: 'Failed to update profile details.' });
   }
 });
 
@@ -97,21 +164,30 @@ router.delete('/delete-account', authMiddleware, async (req, res) => {
     }
 
     // Attempt to delete profile photo from ImageKit if it exists
-    if (user.profilePhoto) {
+    if (user.profilePhotoFileId) {
+      try {
+        await getImageKit().deleteFile(user.profilePhotoFileId);
+        console.log(`✅ Deleted profile photo (File ID: ${user.profilePhotoFileId}) from ImageKit for user ${req.userId}`);
+      } catch (imgErr) {
+        console.error('ImageKit File ID Deletion Error (non-fatal):', imgErr);
+      }
+    } else if (user.profilePhoto) {
+      // Fallback for legacy users
       try {
         const imageKit = getImageKit();
-        // Look up the file by name
+        // Look up files containing the user ID
         const files = await imageKit.listFiles({
-          searchQuery: `name="profile_${user._id}.jpg"`
+          searchQuery: `name : "profile_${user._id}"`
         });
         
         if (files && files.length > 0) {
-          await imageKit.deleteFile(files[0].fileId);
-          console.log(`✅ Deleted profile photo from ImageKit for user ${req.userId}`);
+          for (const f of files) {
+            await imageKit.deleteFile(f.fileId);
+            console.log(`✅ Deleted legacy profile photo ${f.name} from ImageKit for user ${req.userId}`);
+          }
         }
       } catch (imgErr) {
         console.error('ImageKit Deletion Error (non-fatal):', imgErr);
-        // Continue with account deletion even if imagekit deletion fails
       }
     }
 

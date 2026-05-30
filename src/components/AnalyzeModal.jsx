@@ -4,16 +4,6 @@ import { X, Lock, Info, TrendingUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getSemesterGPA, getSemesterCredits } from '../utils/analytics';
 
-const getConsistencyDetails = (stdDev) => {
-  if (stdDev < 0.3) {
-    return { label: "Highly Consistent", score: 90, color: "#10b981", msg: "Exceptional stability across all semesters!" };
-  }
-  if (stdDev < 0.7) {
-    return { label: "Moderate", score: 60, color: "#fbbf24", msg: "Fairly stable, but with some variation." };
-  }
-  return { label: "Unstable", score: 30, color: "#ef4444", msg: "High fluctuations. Try focusing on consistency." };
-};
-
 export default function AnalyzeModal({ semesters, onClose }) {
   const { isGuest, logout } = useAuth();
   // isGuest is a localStorage-backed flag — no backend calls triggered for guests
@@ -61,16 +51,6 @@ export default function AnalyzeModal({ semesters, onClose }) {
   const totalCredits = useMemo(() => {
     return mappedSemesters.reduce((sum, s) => sum + s.credits, 0);
   }, [mappedSemesters]);
-
-  const stdDev = useMemo(() => {
-    if (gpas.length === 0) return 0;
-    const mean = avgGPA;
-    return Math.sqrt(
-      gpas.reduce((sum, g) => sum + Math.pow(g - mean, 2), 0) / gpas.length
-    );
-  }, [gpas, avgGPA]);
-
-  const consistency = useMemo(() => getConsistencyDetails(stdDev), [stdDev]);
 
   // Compute Grade Counts from active, detailed entry semesters
   const gradeCounts = useMemo(() => {
@@ -141,7 +121,7 @@ export default function AnalyzeModal({ semesters, onClose }) {
       return { status: "Achieved (0.00)", value: 0, isError: false };
     }
     return { status: "Achievable", value: neededGPA.toFixed(2), isError: false };
-  }, [totalCredits, avgGPA, targetCGPA, remainingCredits]);
+  }, [totalCredits, avgGPA, targetCGPA, remainingCredits, targetCGPAError]);
 
   const handleCTA = () => {
     logout();

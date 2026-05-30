@@ -3,34 +3,34 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useDashboardTab } from '../context/DashboardTabContext';
-import { LogIn, LogOut, LayoutDashboard, Sun, Moon, ChevronDown, Menu, X, Save, User, TrendingUp } from 'lucide-react';
+import { LogIn, LogOut, LayoutDashboard, Sun, Moon, ChevronDown, Menu, X, Save, User, TrendingUp, BookOpen } from 'lucide-react';
 import { MagneticButton } from './Spotlight';
 import { capitalizeName } from '../utils/helpers';
 import './Navbar.css';
-
+ 
 export default function Navbar() {
   const { currentUser, isGuest, logout, profileData } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { activeTab, setActiveTab, onSave, saveStatus } = useDashboardTab();
   const navigate = useNavigate();
   const location = useLocation();
-
+ 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
-
+ 
   const isAuthenticated = !!currentUser;
   // isGuest comes from AuthContext (localStorage-backed flag)
-
+ 
   const handleLogoClick = () => {
     navigate('/');
   };
-
+ 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
-
+ 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -41,20 +41,23 @@ export default function Navbar() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
+ 
   // Close mobile menu on route change
   useEffect(() => {
-    setMobileMenuOpen(false);
-    setDropdownOpen(false);
+    const timer = setTimeout(() => {
+      setMobileMenuOpen(false);
+      setDropdownOpen(false);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [location.pathname]);
-
+ 
   const navTabs = [
     { key: 'semester', label: 'Semester GPA' },
     { key: 'overall', label: 'CGPA' },
     { key: 'target', label: 'Target CGPA' },
     { key: 'simulator', label: 'What-If' },
   ];
-
+ 
   const handleTabClick = (tab) => {
     setActiveTab(tab.key);
     if (location.pathname !== '/dashboard') {
@@ -62,17 +65,20 @@ export default function Navbar() {
     }
     setMobileMenuOpen(false);
   };
-
+ 
   const isOnDashboard = location.pathname === '/dashboard';
   const isAuthScreen = location.pathname === '/login';
   const isLandingPage = location.pathname === '/';
+  const isLegalPage = ['/privacy', '/terms', '/help', '/support'].includes(location.pathname);
+  const showNavTabs = (isAuthenticated || isGuest) && !isAuthScreen && !isLandingPage && !isLegalPage;
+  const showThemeToggle = ['/dashboard', '/profile', '/score-flow'].includes(location.pathname);
 
   return (
     <nav className={`navbar-premium ${isAuthScreen ? 'navbar-hidden-until-hover' : ''}`}>
       <div className="navbar-inner">
         {/* ── LEFT: Logo ── */}
         <div className="navbar-left">
-          {(isAuthenticated || isGuest) && !isAuthScreen && !isLandingPage && (
+          {showNavTabs && (
             <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
               {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -82,10 +88,10 @@ export default function Navbar() {
             <span className="brand-text">Gra<span className="smooth-gradient-text">VIT</span>al</span>
           </div>
         </div>
-
+ 
         {/* ── CENTER: Navigation Tabs ── */}
         <div className="navbar-center">
-          {(isAuthenticated || isGuest) && !isAuthScreen && !isLandingPage && (
+          {showNavTabs && (
             <div className="nav-tabs-container">
               {navTabs.map((tab) => (
                 <button
@@ -99,21 +105,20 @@ export default function Navbar() {
             </div>
           )}
         </div>
-
+ 
         {/* ── RIGHT: Actions ── */}
         <div className="navbar-right">
-          {/* Theme Toggle */}
-          {!isLandingPage && (
+          {showThemeToggle && (
             <button
               className="theme-toggle-btn"
               onClick={toggleTheme}
-              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
               aria-label="Toggle theme"
             >
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
           )}
-
+ 
           {(isAuthenticated || isGuest) && !isAuthScreen ? (
             <div className="auth-actions-logged-in">
               {isAuthenticated && onSave && (
@@ -126,7 +131,7 @@ export default function Navbar() {
                   <Save size={16} /> <span className="hide-mobile">{saveStatus || 'Save to Cloud'}</span>
                 </MagneticButton>
               )}
-
+ 
               {isAuthenticated ? (
                 <div className="avatar-dropdown-wrapper" ref={dropdownRef}>
                   <button
@@ -145,7 +150,7 @@ export default function Navbar() {
                     </div>
                     <ChevronDown size={14} className={`avatar-chevron ${dropdownOpen ? 'avatar-chevron-open' : ''}`} />
                   </button>
-
+ 
                   {/* Dropdown Menu */}
                   {dropdownOpen && (
                     <div className="avatar-dropdown animate-scale-in">
@@ -173,6 +178,10 @@ export default function Navbar() {
                         <TrendingUp size={16} />
                         <span>Score Flow</span>
                       </button>
+                      <button className="dropdown-item" onClick={() => { navigate('/help'); setDropdownOpen(false); }}>
+                        <BookOpen size={16} />
+                        <span>System Guide</span>
+                      </button>
                       <button className="dropdown-item dropdown-item-danger" onClick={() => { handleLogout(); setDropdownOpen(false); }}>
                         <LogOut size={16} />
                         <span>Logout</span>
@@ -196,12 +205,12 @@ export default function Navbar() {
             <div className="auth-actions-logged-out">
               {location.pathname !== '/login' && (
                 <MagneticButton
-                  className="btn-primary"
+                  className="btn-primary navbar-signin-btn"
                   onClick={() => navigate('/login')}
                   strength={0.28}
                   maxShift={8}
                 >
-                  <LogIn size={18} /> Sign In
+                  <LogIn size={15} /> Sign In
                 </MagneticButton>
               )}
             </div>
@@ -210,7 +219,7 @@ export default function Navbar() {
       </div>
 
       {/* ── Mobile Slide-Down Nav ── */}
-      {(isAuthenticated || isGuest) && !isAuthScreen && !isLandingPage && mobileMenuOpen && (
+      {showNavTabs && mobileMenuOpen && (
         <div className="mobile-nav-drawer animate-fade-in">
           {navTabs.map((tab) => (
             <button

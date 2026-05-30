@@ -244,8 +244,12 @@
   }
 
   .sim-stat-group {
-    flex-direction: column;
-    gap: 16px;
+    display: grid !important;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    justify-items: center;
+    width: 100%;
+    gap: 16px 8px;
   }
 
   .sim-stat-value {
@@ -253,11 +257,14 @@
   }
 
   .sim-delta {
+    grid-column: span 3;
     margin-left: 0;
+    justify-self: center;
   }
 
   .sim-arrow-divider {
-    display: none;
+    display: flex !important;
+    opacity: 0.6;
   }
 
   .simulator-table-section {
@@ -277,11 +284,11 @@
   }
 
   .sim-table tr {
-    display: flex !important;
-    flex-wrap: wrap;
-    gap: 10px;
+    display: grid !important;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 12px;
     padding: 16px;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     background: var(--bg-input);
     border: 1px solid var(--card-border);
     border-radius: 16px;
@@ -291,26 +298,68 @@
     border: none;
     padding: 0;
     display: flex;
-    flex: 1 1 calc(50% - 5px);
-    width: auto !important;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100% !important;
     min-width: 0 !important;
   }
 
-  .sim-table td:first-child {
-    flex: 1 1 100%;
+  .sim-table td::before {
+    content: attr(data-label);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    display: block;
+    letter-spacing: 0.5px;
   }
 
-  .sim-table td:nth-child(5) {
-    flex: 1 1 100%;
-    justify-content: center;
+  /* Row 1: Subject Name (left) and Delete option (right) */
+  .sim-table td:nth-child(1) {
+    grid-column: span 10;
+    order: 1;
   }
 
-  .sim-table td:last-child {
-    flex: 1 1 100%;
-    margin-top: 6px;
-    border-top: 1px dashed var(--card-border);
-    padding-top: 10px;
-    justify-content: center;
+  .sim-table td.sim-delete-td {
+    grid-column: span 2;
+    justify-content: flex-end;
+    align-self: end;
+    height: 42px;
+    margin-top: 0;
+    order: 2;
+  }
+
+  .sim-table td.sim-delete-td::before {
+    display: none;
+  }
+
+  /* Row 2: Credits (left) and Actual Grade (right) */
+  .sim-table td:nth-child(2) {
+    grid-column: span 6;
+    order: 3;
+  }
+
+  .sim-table td:nth-child(3) {
+    grid-column: span 6;
+    order: 4;
+  }
+
+  /* Row 3: Simulated Grade (left) and GPA Impact (right) */
+  .sim-table td:nth-child(4) {
+    grid-column: span 8;
+    order: 5;
+  }
+
+  .sim-table td.sim-impact-td {
+    grid-column: span 4;
+    align-items: center;
+    justify-content: flex-start;
+    order: 6;
+  }
+
+  .sim-table td.sim-impact-td::before {
+    align-self: center;
   }
 
   .sim-table td .input-field,
@@ -327,9 +376,13 @@
   .delete-btn {
     width: 100%;
     color: var(--error);
-    background: rgba(239, 68, 68, 0.1);
-    min-height: 44px;
+    background: rgba(239, 68, 68, 0.08);
+    height: 42px;
     border-radius: 10px;
+    border: 1px solid rgba(239, 68, 68, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -452,4 +505,162 @@
 
 [data-theme="light"] .sem-btn-add:hover {
   box-shadow: 0 0 15px rgba(79, 70, 229, 0.3), 0 2px 8px rgba(79, 70, 229, 0.2) !important;
+}
+
+/* Premium Simulation Summary Container */
+.sim-summary-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  padding: 24px;
+  border-top: 1px solid var(--card-border);
+  background: rgba(11, 15, 25, 0.4);
+  backdrop-filter: blur(12px);
+  border-radius: 0 0 20px 20px;
+}
+
+[data-theme="light"] .sim-summary-container {
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.sim-summary-action-row {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+.sim-add-btn-premium {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 600px;
+  background: var(--gradient-primary);
+  color: white;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  cursor: pointer;
+}
+
+[data-theme="light"] .sim-add-btn-premium {
+  border: 1px solid rgba(79, 70, 229, 0.15);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+}
+
+.sim-add-btn-premium:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+}
+
+[data-theme="light"] .sim-add-btn-premium:hover {
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35);
+}
+
+.sim-add-btn-premium:active {
+  transform: translateY(0);
+}
+
+.sim-summary-grid-premium {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  width: 100%;
+  align-items: center;
+  position: relative;
+}
+
+.sim-summary-tile-premium {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 12px 6px;
+  position: relative;
+}
+
+/* Vertical Dividers between tiles */
+.sim-summary-tile-premium:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 15%;
+  height: 70%;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="light"] .sim-summary-tile-premium:not(:last-child)::after {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.sim-tile-icon-premium {
+  color: #818cf8;
+  opacity: 0.85;
+}
+
+[data-theme="light"] .sim-tile-icon-premium {
+  color: #4f46e5;
+}
+
+.sim-tile-icon-premium.highlight {
+  color: #a78bfa;
+}
+
+[data-theme="light"] .sim-tile-icon-premium.highlight {
+  color: #7c3aed;
+}
+
+.sim-tile-value-premium {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1;
+}
+
+.sim-tile-value-premium.highlight {
+  color: #a78bfa;
+}
+
+[data-theme="light"] .sim-tile-value-premium.highlight {
+  color: #7c3aed;
+}
+
+.sim-tile-label-premium {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive overrides */
+@media (max-width: 600px) {
+  .sim-summary-container {
+    padding: 16px 12px;
+    gap: 16px;
+  }
+
+  .sim-tile-value-premium {
+    font-size: 18px;
+  }
+
+  .sim-tile-label-premium {
+    font-size: 9px;
+    letter-spacing: 0.3px;
+  }
+
+  .sim-tile-icon-premium {
+    width: 18px;
+    height: 18px;
+  }
 }

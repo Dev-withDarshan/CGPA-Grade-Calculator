@@ -38,11 +38,11 @@ const SEMESTER_THEMES = [
 ];
 
 export default function ScoreFlow() {
-  const { userData, currentUser, isLoading, scoreFlowData, saveScoreFlowData } = useAuth();
+  const { userData, isLoading, scoreFlowData, saveScoreFlowData } = useAuth();
   const navigate = useNavigate();
 
   // Navigation tab for Score Flow page: "timeline" vs "vtop"
-  const [activeTab, setActiveTab] = useState('timeline');
+  const [activeTab, setActiveTab] = useState('vtop');
 
   // VTOP paste input state
   const [pastedText, setPastedText] = useState('');
@@ -57,9 +57,12 @@ export default function ScoreFlow() {
   // Sync vtopData when scoreFlowData arrives from backend (e.g. after login)
   useEffect(() => {
     if (scoreFlowData && !vtopData) {
-      setVtopData(scoreFlowData);
+      const timer = setTimeout(() => {
+        setVtopData(scoreFlowData);
+      }, 0);
+      return () => clearTimeout(timer);
     }
-  }, [scoreFlowData]);
+  }, [scoreFlowData, vtopData]);
 
   // VTOP table filter states
   const [vtopSearch, setVtopSearch] = useState('');
@@ -968,7 +971,7 @@ export default function ScoreFlow() {
                           };
 
                           return Object.entries(vtopDistributions)
-                            .filter(([_, stats]) => stats.count > 0)
+                            .filter(([, stats]) => stats.count > 0)
                             .map(([cat, stats]) => {
                               const themeClass = getCatTheme(cat);
                               return (

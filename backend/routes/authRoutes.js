@@ -1,6 +1,7 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import { rateLimit } from 'express-rate-limit';
+import crypto from 'crypto';
 import User from '../models/User.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 
@@ -92,6 +93,71 @@ router.post('/login', authLimiter, async (req, res) => {
   } catch (err) {
     console.error('Login Error:', err);
     res.status(500).json({ error: 'Server error during login.' });
+  }
+});
+
+// ── Google Login (Only VIT Mail ID) ───────────────────────────
+router.post('/google-login', authLimiter, async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required.' });
+    }
+
+    const trimmedEmail = email.trim().toLowerCase();
+    const parts = trimmedEmail.split('@');
+    const domain = parts[1];
+    
+    // Check if email ends with a valid VIT domain
+    const allowedDomains = ['vitstudent.ac.in', 'vit.ac.in', 'vit.edu', 'vitstudent.edu'];
+    if (!allowedDomains.includes(domain)) {
+      return res.status(400).json({ error: 'Only VIT mail IDs are authorized to log in.' });
+    }
+
+    // Determine fallback username from email prefix (e.g. darshan.patel2020)
+    const emailPrefix = parts[0];
+    // Strip non-alphanumeric chars or limit username format
+    let username = emailPrefix.replace(/[^a-zA-Z0-9]/g, '');
+    if (!username) username = 'vituser_' + Math.floor(Math.random() * 10000);
+
+    // Look for user by email first, fallback to username
+    let user = await User.findOne({ email: trimmedEmail });
+    
+    if (!user) {
+      // If email doesn't exist, check if the username is taken
+      let existingUsernameUser = await User.findOne({ username });
+      if (existingUsernameUser) {
+        // Append a random number to username to resolve conflict
+        username = `${username}${Math.floor(Math.random() * 1000)}`;
+      }
+
+      // Create new user with a secure random password
+      const randomPassword = crypto.randomBytes(16).toString('hex');
+      user = new User({
+        username,
+        email: trimmedEmail,
+        password: randomPassword
+      });
+      await user.save();
+    } else {
+      // Update lastLogin
+      user.lastLogin = Date.now();
+      await user.save();
+    }
+
+    const token = generateToken(user._id);
+
+    res.json({
+      success: true,
+      message: 'Authenticated successfully via Google.',
+      token,
+      username: user.username,
+      email: user.email || '',
+      gpaData: user.gpaData
+    });
+  } catch (err) {
+    console.error('Google Login Route Error:', err);
+    res.status(500).json({ error: 'Server error during Google authentication.' });
   }
 });
 

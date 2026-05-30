@@ -15,7 +15,8 @@ export const scanImageForSubjects = async (imageFile, onProgress) => {
   if (onProgress) onProgress(30);
 
   // Send to backend
-  const backendEndpoint = 'https://gravital-backend.onrender.com/api/scan-screenshot';
+  const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : 'https://gravital-backend.onrender.com');
+  const backendEndpoint = `${API}/api/scan-screenshot`;
   
   let response;
   try {
@@ -36,7 +37,7 @@ export const scanImageForSubjects = async (imageFile, onProgress) => {
   let resData;
   try {
     resData = await response.json();
-  } catch (parseErr) {
+  } catch {
     throw new Error("Server returned invalid response (not JSON). Status: " + response.status);
   }
 

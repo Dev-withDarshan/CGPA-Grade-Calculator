@@ -12,12 +12,33 @@ import Profile from './components/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 import ParticleBackground from './components/ParticleBackground';
 import ScoreFlow from './components/ScoreFlow';
+import TermsPage from './components/TermsPage';
+import SupportPage from './components/SupportPage';
+import PrivacyPage from './components/PrivacyPage';
+import HelpPage from './components/HelpPage';
+
+import { useTheme } from './context/ThemeContext';
 
 // Layout wrapper to easily include Navbar and global background on all pages
 const AppLayout = () => {
   const location = useLocation();
   const showParticles = location.pathname === '/';
   const showNavbar = location.pathname !== '/login';
+  const { theme } = useTheme();
+
+  React.useEffect(() => {
+    const isDashboardPage = ['/dashboard', '/profile', '/score-flow'].includes(location.pathname);
+    if (!isDashboardPage) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      if (theme === 'system') {
+        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+    }
+  }, [location.pathname, theme]);
 
   return (
     <>
@@ -27,6 +48,10 @@ const AppLayout = () => {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<AuthScreen />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/support" element={<SupportPage />} />
+          <Route path="/help" element={<HelpPage />} />
           <Route 
             path="/dashboard" 
             element={

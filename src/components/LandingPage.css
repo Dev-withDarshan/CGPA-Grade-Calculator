@@ -290,6 +290,26 @@
     font-size: 11px;
     padding: 6px 14px;
   }
+
+  .btn-neon-get-started {
+    padding: 8px 10px !important;
+    gap: 12px !important;
+    max-width: 290px !important;
+  }
+
+  .neon-btn-icon {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .neon-btn-icon svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .neon-btn-text {
+    font-size: 17px !important;
+  }
 }
 
 /* ── Premium SaaS Hero Section Styles ── */

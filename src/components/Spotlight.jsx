@@ -13,7 +13,7 @@ export function SpotlightCard({ children, className = '', style = {}, ...rest })
 
   const lerp = (a, b, t) => a + (b - a) * t;
 
-  const tick = useCallback(() => {
+  const tick = useCallback(function tickCallback() {
     const el = ref.current;
     if (!el) return;
 
@@ -28,7 +28,7 @@ export function SpotlightCard({ children, className = '', style = {}, ...rest })
       Math.abs(current.current.ry - target.current.ry) > 0.01 ||
       Math.abs(current.current.scale - target.current.scale) > 0.005
     ) {
-      frameId.current = requestAnimationFrame(tick);
+      frameId.current = requestAnimationFrame(tickCallback);
     }
   }, []);
 
@@ -103,7 +103,7 @@ export function MagneticButton({
 
   const lerp = (a, b, t) => a + (b - a) * t;
 
-  const tick = useCallback(() => {
+  const tick = useCallback(function tickCallback() {
     const el = ref.current;
     if (!el) return;
 
@@ -119,7 +119,7 @@ export function MagneticButton({
       Math.abs(current.current.y - target.current.y) > 0.05 ||
       Math.abs(current.current.scale - target.current.scale) > 0.005
     ) {
-      frameId.current = requestAnimationFrame(tick);
+      frameId.current = requestAnimationFrame(tickCallback);
     }
   }, []);
 

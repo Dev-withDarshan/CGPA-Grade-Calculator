@@ -4,9 +4,10 @@ import { useAuth } from '../context/AuthContext';
 import { ArrowRight, Cloud, Shield, Calculator, LayoutDashboard, BarChart3, Sparkles, Camera, GraduationCap, Gift, ChevronsRight, Rocket } from 'lucide-react';
 import './LandingPage.css';
 import { SpotlightCard, MagneticButton } from './Spotlight';
+import { Footer } from './WhyGraVITal';
 
 // Component for sub-pixel localized text brightening
-const InteractiveText = ({ children, as: Component = 'div', className = '' }) => {
+const InteractiveText = ({ children, className = '' }) => {
   const ref = React.useRef(null);
 
   const onMove = React.useCallback((e) => {
@@ -23,7 +24,7 @@ const InteractiveText = ({ children, as: Component = 'div', className = '' }) =>
   }, []);
 
   return (
-    <Component
+    <div
       className={`interactive-text-container ${className}`}
       ref={ref}
       onPointerMove={onMove}
@@ -35,7 +36,7 @@ const InteractiveText = ({ children, as: Component = 'div', className = '' }) =>
       <div className="interactive-text-glow" aria-hidden="true" style={{ userSelect: 'none' }}>
         {children}
       </div>
-    </Component>
+    </div>
   );
 };
 
@@ -223,6 +224,7 @@ export default function LandingPage() {
           </SpotlightCard>
         </section>
 
+        <Footer />
       </div>
     </>
   );

@@ -50,7 +50,7 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log("MongoDB Connected 🚀"))
   .catch((err) => console.error("Mongo Error:", err));
 
-// ── Global Error Handler ───────────────────────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error('Unhandled Error:', err);
   const status = err.statusCode || 500;

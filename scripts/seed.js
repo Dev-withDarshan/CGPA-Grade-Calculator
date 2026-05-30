@@ -1,5 +1,3 @@
-import fs from 'fs';
-
 const theorySubjects = [
   { id: crypto.randomUUID(), name: 'Digital Logic and Microprocessors', credits: 3, grade: 'S' },
   { id: crypto.randomUUID(), name: 'Database Systems', credits: 3, grade: 'S' },
@@ -20,7 +18,6 @@ const labSubjects = [
 
 async function setup() {
   const username = 'testuser';
-  const password = 'Test@1234';
 
   console.log('1. Re-saving explicit payload...');
 

@@ -46,7 +46,7 @@ export default function TargetCalculator({ initialData, onChange }) {
 
   const handleCGPAChange = (e, setter) => {
     let val = e.target.value;
-    if (val.includes('.') && val.split('.')[1].length > 2) return;
+    if (val.includes('.') && val.split('.')[1].length > 4) return;
     setter(val);
   };
 
@@ -90,7 +90,10 @@ export default function TargetCalculator({ initialData, onChange }) {
 
     if (requiredGPA < 0) requiredGPA = 0;
 
-    return requiredGPA.toFixed(2);
+    const val = requiredGPA.toFixed(4);
+    if (val.endsWith('00')) return requiredGPA.toFixed(2);
+    if (val.endsWith('0')) return requiredGPA.toFixed(3);
+    return val;
   };
 
   const requiredGPA = calculateRequiredGPA();
@@ -100,7 +103,7 @@ export default function TargetCalculator({ initialData, onChange }) {
 
   // Generate insight message
   const getInsight = () => {
-    if (!hasResult) return { icon: Lightbulb, text: 'Enter your details above to see what GPA you need next semester.', sub: '' };
+    if (!hasResult) return { icon: Lightbulb, text: 'Enter your details below to see what GPA you need next semester.', sub: '' };
     if (isImpossible) return { icon: TrendingDown, text: 'You need a higher GPA next semester.', sub: 'Focus on improving your performance!' };
     if (gpaNum >= 9) return { icon: TrendingUp, text: 'This is a stretch goal — you\'ll need top grades.', sub: 'Aim for S and A grades in every subject.' };
     if (gpaNum >= 7) return { icon: TrendingUp, text: 'Very achievable with consistent effort.', sub: 'Maintain good study habits and stay focused.' };
@@ -176,7 +179,7 @@ export default function TargetCalculator({ initialData, onChange }) {
               </div>
               <div className="tc-stat-info">
                 <span className="tc-stat-label">Current CGPA</span>
-                <span className="tc-stat-value">{currentCGPA ? Number(currentCGPA).toFixed(2) : '—'}</span>
+                <span className="tc-stat-value">{currentCGPA || '—'}</span>
               </div>
             </div>
 
@@ -186,7 +189,7 @@ export default function TargetCalculator({ initialData, onChange }) {
               </div>
               <div className="tc-stat-info">
                 <span className="tc-stat-label">Target Desired CGPA</span>
-                <span className="tc-stat-value">{targetCGPA ? Number(targetCGPA).toFixed(2) : '—'}</span>
+                <span className="tc-stat-value">{targetCGPA || '—'}</span>
               </div>
             </div>
 
@@ -222,13 +225,14 @@ export default function TargetCalculator({ initialData, onChange }) {
 
         <div className="tc-form-grid">
           <div className="tc-field">
-            <label>Current Completed Credits</label>
+            <label>Earned Credits</label>
             <div className="tc-input-wrap">
               <input
                 type="number"
                 className="input-field"
                 placeholder="e.g. 60"
                 min="0"
+                max="500"
                 value={currentCredits}
                 onChange={(e) => setCurrentCredits(e.target.value)}
               />

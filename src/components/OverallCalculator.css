@@ -332,6 +332,7 @@
   font-weight: 800;
   line-height: 1;
   margin-bottom: 4px;
+  color: var(--text-main);
 }
 .stat-card-desc {
   font-size: 13px;
@@ -376,7 +377,7 @@
   font-size: 8px;
   color: var(--text-muted);
   opacity: 0.5;
-  height: 35px;
+  height: 70px;
   padding-right: 6px;
   text-align: right;
   user-select: none;
@@ -388,7 +389,7 @@
 }
 .trend-svg {
   width: 100%;
-  height: 35px;
+  height: 70px;
   overflow: visible;
 }
 .graph-point-glow {
@@ -610,6 +611,7 @@
   font-size: 20px;
   font-weight: 700;
   line-height: 1.2;
+  color: var(--text-main);
 }
 
 .sem-card-actions {
@@ -735,6 +737,7 @@
   padding: 16px;
   position: relative;
   transition: all 0.2s;
+  cursor: pointer;
 }
 .prediction-card:hover {
   transform: translateY(-2px);
@@ -743,6 +746,11 @@
 .prediction-card-best {
   background: rgba(139, 92, 246, 0.05);
   border-color: rgba(139, 92, 246, 0.3);
+}
+.prediction-card-active {
+  background: rgba(139, 92, 246, 0.15) !important;
+  border-color: rgba(139, 92, 246, 0.6) !important;
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
 }
 .best-badge {
   position: absolute;
@@ -1476,13 +1484,18 @@
 }
 
 @media (max-width: 768px) {
-  /* Top grid collapses to single column */
+  /* Top grid side-by-side layout for CGPA and Credits */
   .top-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1.2fr 1fr !important;
+    gap: 12px !important;
   }
   .right-column {
-    grid-template-rows: unset;
-    grid-template-columns: 1fr;
+    grid-template-rows: 1fr !important;
+    grid-template-columns: 1fr !important;
+  }
+  /* Remove trend graph (second card in right column) on mobile */
+  .right-column .stat-card:nth-child(2) {
+    display: none !important;
   }
   /* Hero CGPA value scales down */
   .hero-cgpa-value {
@@ -1496,9 +1509,9 @@
   .hero-graphic {
     display: none;
   }
+  /* Remove three tiles below progress bar */
   .hero-stats-row {
-    grid-template-columns: 1fr;
-    gap: 12px;
+    display: none !important;
   }
   /* Action bar stacks vertically */
   .dashboard-action-bar {
@@ -1537,10 +1550,14 @@
     width: 100%;
     justify-content: space-between;
   }
-  /* Quick entry single column */
+  /* Maintain Credits and GPA on same row */
   .quick-entry-row {
-    grid-template-columns: 1fr;
-    gap: 16px;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+  }
+  /* Hide predictive mini-simulator on mobile */
+  .simulator-section {
+    display: none !important;
   }
   /* Prediction grid 2 col */
   .prediction-cards-grid {
@@ -1574,9 +1591,6 @@
   }
   .sem-card-body {
     padding: 0 10px 12px;
-  }
-  .hero-stats-row {
-    grid-template-columns: 1fr;
   }
   .detailed-table-wrapper {
     overflow-x: auto;
@@ -1683,4 +1697,23 @@
 }
 [data-theme="light"] .detailed-table td {
   border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+@media (max-width: 600px) {
+  .action-buttons {
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .action-btn {
+    width: 100% !important;
+    margin-left: 0 !important;
+    justify-content: center !important;
+  }
+  .detailed-table td input.input-field,
+  .detailed-table td select.input-field {
+    padding: 8px !important;
+    font-size: 13px !important;
+    min-height: 38px !important;
+  }
 }

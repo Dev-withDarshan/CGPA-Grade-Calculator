@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useDashboardTab } from '../context/DashboardTabContext';
 import SemesterCalculator from './SemesterCalculator';
@@ -8,8 +8,8 @@ import GradeSimulator from './GradeSimulator';
 import './Dashboard.css';
 
 export default function Dashboard() {
-  const { currentUser, logout, userData, saveUserData, isLoading } = useAuth();
-  const { activeTab, setActiveTab, setOnSave, saveStatus, setSaveStatus } = useDashboardTab();
+  const { userData, saveUserData, isLoading } = useAuth();
+  const { activeTab, setActiveTab, setOnSave, setSaveStatus } = useDashboardTab();
 
   // Local state to hold the current values of calculators before saving
   const [semesterData, setSemesterData] = useState(null);
@@ -19,21 +19,16 @@ export default function Dashboard() {
   // Load user data on mount
   useEffect(() => {
     if (userData) {
-      if (userData.semester) setSemesterData(userData.semester);
-      if (userData.overall) setOverallData(userData.overall);
-      if (userData.target) setTargetData(userData.target);
+      const timer = setTimeout(() => {
+        if (userData.semester) setSemesterData(userData.semester);
+        if (userData.overall) setOverallData(userData.overall);
+        if (userData.target) setTargetData(userData.target);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [userData]);
 
-  if (isLoading) {
-    return (
-      <div className="dashboard-loading">
-        <h2 className="smooth-gradient-text animate-pulse">Syncing Cloud Database...</h2>
-      </div>
-    );
-  }
-
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     const dataToSave = {
       semester: semesterData,
       overall: overallData,
@@ -44,17 +39,25 @@ export default function Dashboard() {
     try {
       await saveUserData(dataToSave);
       setSaveStatus('✓ Saved!');
-    } catch (err) {
+    } catch {
       setSaveStatus('Save failed!');
     }
     setTimeout(() => setSaveStatus(''), 2000);
-  };
+  }, [semesterData, overallData, targetData, saveUserData, setSaveStatus]);
 
   // Register the save callback in the shared context
   useEffect(() => {
     setOnSave(() => handleSave);
     return () => setOnSave(null);
-  }, [semesterData, overallData, targetData, setOnSave]);
+  }, [handleSave, setOnSave]);
+
+  if (isLoading) {
+    return (
+      <div className="dashboard-loading">
+        <h2 className="smooth-gradient-text animate-pulse">Syncing Cloud Database...</h2>
+      </div>
+    );
+  }
 
   const handleAddToCGPA = (credits, gpa) => {
     if (!credits || credits <= 0) return;

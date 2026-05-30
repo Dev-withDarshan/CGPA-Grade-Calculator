@@ -36,14 +36,14 @@ export default function TrendCard({ semesters, onAddSemester }) {
     return { minY: calculatedMinY, maxY: calculatedMaxY };
   }, [displaySems, isEmpty]);
 
-  // Map to SVG coordinates: width 180, height 35.
-  // Y: maxY -> 3px, minY -> 32px
+  // Map to SVG coordinates: width 180, height 70.
+  // Y: maxY -> 5px, minY -> 65px
   const points = useMemo(() => {
     const range = maxY - minY || 1;
     if (displaySems.length === 1) {
       const gpa = displaySems[0].gpa;
       const isMissing = gpa <= 0 || gpa > 10;
-      const yVal = isMissing ? 32 : 32 - ((gpa - minY) / range) * 29;
+      const yVal = isMissing ? 65 : 65 - ((gpa - minY) / range) * 60;
       return [
         { x: 10, y: yVal, isMissing, gpa },
         { x: 170, y: yVal, isMissing, gpa }
@@ -51,7 +51,7 @@ export default function TrendCard({ semesters, onAddSemester }) {
     }
     return displaySems.map((s, idx) => {
       const isMissing = s.gpa <= 0 || s.gpa > 10;
-      const yVal = isMissing ? 32 : 32 - ((s.gpa - minY) / range) * 29;
+      const yVal = isMissing ? 65 : 65 - ((s.gpa - minY) / range) * 60;
       return {
         x: 10 + (idx / (displaySems.length - 1)) * 160,
         y: yVal,
@@ -122,14 +122,14 @@ export default function TrendCard({ semesters, onAddSemester }) {
           <span>{minY.toFixed(1)}</span>
         </div>
         <div className="graph-content-area">
-          <svg className="trend-svg" width="100%" height="35" viewBox="0 0 180 35" preserveAspectRatio="none">
+          <svg className="trend-svg" width="100%" height="70" viewBox="0 0 180 70" preserveAspectRatio="none">
             {/* Grid lines */}
-            <line x1="0" y1="3" x2="180" y2="3" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-            <line x1="0" y1="8.8" x2="180" y2="8.8" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-            <line x1="0" y1="14.6" x2="180" y2="14.6" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-            <line x1="0" y1="20.4" x2="180" y2="20.4" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-            <line x1="0" y1="26.2" x2="180" y2="26.2" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-            <line x1="0" y1="32" x2="180" y2="32" stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="2 2" />
+            <line x1="0" y1="5" x2="180" y2="5" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+            <line x1="0" y1="17" x2="180" y2="17" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+            <line x1="0" y1="29" x2="180" y2="29" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+            <line x1="0" y1="41" x2="180" y2="41" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+            <line x1="0" y1="53" x2="180" y2="53" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+            <line x1="0" y1="65" x2="180" y2="65" stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="2 2" />
 
             {points && points.length >= 2 && pathD && pathD.trim() !== "" && (
               <path 
@@ -150,7 +150,7 @@ export default function TrendCard({ semesters, onAddSemester }) {
                   <circle 
                     key={i} 
                     cx={p.x} 
-                    cy={32} 
+                    cy={65} 
                     r="3" 
                     fill="transparent" 
                     stroke="rgba(255,255,255,0.3)"
@@ -182,7 +182,7 @@ export default function TrendCard({ semesters, onAddSemester }) {
                 <stop offset="0%" stopColor="#8b5cf6" />
                 <stop offset="100%" stopColor="#06b6d4" />
               </linearGradient>
-              <filter id="glow" filterUnits="userSpaceOnUse" x="-10" y="-10" width="200" height="55">
+              <filter id="glow" filterUnits="userSpaceOnUse" x="-10" y="-10" width="200" height="90">
                 <feGaussianBlur stdDeviation="1.5" result="blur" />
                 <feComposite in="SourceGraphic" in2="blur" operator="over" />
               </filter>

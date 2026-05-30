@@ -2774,3 +2774,9 @@
   height: 14px !important;
 }
 
+@media (max-width: 768px) {
+  .score-flow-container {
+    padding-bottom: 120px !important;
+  }
+}
+

@@ -14,7 +14,20 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     sparse: true // Allows multiple users without an email (old users)
   },
+  profile: {
+    name: { type: String, default: "" },
+    branch: { type: String, default: "" },
+    year: { type: String, default: "" },
+    targetCGPA: { type: String, default: "" },
+    gradingSystem: { type: String, default: "VIT Grading" },
+    emailNotifications: { type: Boolean, default: true },
+    twoFactorEnabled: { type: Boolean, default: true }
+  },
   profilePhoto: {
+    type: String,
+    default: ""
+  },
+  profilePhotoFileId: {
     type: String,
     default: ""
   },
@@ -28,6 +41,10 @@ const UserSchema = new mongoose.Schema({
     expires: 31536000 // MongoDB TTL index: automatically deletes document after 1 year (in seconds) of inactivity
   },
   gpaData: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null
+  },
+  simulatorData: {
     type: mongoose.Schema.Types.Mixed,
     default: null
   },

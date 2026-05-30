@@ -8,7 +8,8 @@ import {
   Camera, Save, User, Mail, ArrowLeft, GraduationCap, Calendar,
   Target, BookOpen, Award, Settings, Shield, ChevronRight,
   Sun, Moon, Eye, Pencil, Check, X, Zap, Bell, Lock, ShieldCheck,
-  Monitor, Trash2, Headphones, TrendingUp, EyeOff, HelpCircle, Dna
+  Monitor, Trash2, Headphones, TrendingUp, EyeOff, HelpCircle, Dna,
+  Laptop, Smartphone, Globe, Copy
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -31,8 +32,8 @@ const BRANCH_OPTIONS = [
 const YEAR_OPTIONS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
 
 export default function Profile() {
-  const { profileData, updateProfileData, uploadProfilePhoto, currentUser, isGuest, userData, changePassword, deleteAccount } = useAuth();
-  const { theme, toggleTheme, selectTheme } = useTheme();
+  const { profileData, updateProfileData, uploadProfilePhoto, isGuest, userData, changePassword, deleteAccount } = useAuth();
+  const { theme, selectTheme } = useTheme();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
@@ -52,7 +53,6 @@ export default function Profile() {
   const [emailNotifications, setEmailNotifications] = useState(true);
 
   /* ── Local form state (security card) ── */
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -66,22 +66,101 @@ export default function Profile() {
   const [deletePassword, setDeletePassword] = useState('');
   const [showDeletePassword, setShowDeletePassword] = useState(false);
 
+  /* ── Local state for 2FA and Sessions optimization ── */
+  const [is2FASetupOpen, setIs2FASetupOpen] = useState(false);
+  const [is2FADisableOpen, setIs2FADisableOpen] = useState(false);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [twoFactorPassword, setTwoFactorPassword] = useState('');
+  const [isSessionsOpen, setIsSessionsOpen] = useState(false);
+  const [sessions, setSessions] = useState([
+    { id: '1', device: 'Windows PC • Chrome', location: 'Chennai, India', date: 'Active now (Current)', current: true, type: 'pc' },
+    { id: '2', device: 'iPhone 15 • Gravital App', location: 'Vellore, India', date: 'Last active: 2 hours ago', current: false, type: 'mobile' },
+    { id: '3', device: 'MacBook Pro • Safari', location: 'Mumbai, India', date: 'Last active: 3 days ago', current: false, type: 'laptop' }
+  ]);
+  const [revokingSessionId, setRevokingSessionId] = useState(null);
+  const [isRevokingAll, setIsRevokingAll] = useState(false);
+
+  const handleToggle2FA = () => {
+    if (profileData.twoFactorEnabled) {
+      setIs2FADisableOpen(true);
+    } else {
+      setIs2FASetupOpen(true);
+    }
+  };
+
+  const handleVerifyEnable2FA = (e) => {
+    if (e) e.preventDefault();
+    if (!twoFactorCode || twoFactorCode.length !== 6 || isNaN(twoFactorCode)) {
+      toast.error("Please enter a valid 6-digit verification code");
+      return;
+    }
+    const res = updateProfileData({ twoFactorEnabled: true });
+    if (res.success) {
+      toast.success("Two-Factor Authentication enabled successfully!");
+      setTwoFactorCode('');
+      setIs2FASetupOpen(false);
+    } else {
+      toast.error(res.error || "Failed to enable 2FA");
+    }
+  };
+
+  const handleDisable2FA = (e) => {
+    if (e) e.preventDefault();
+    if (!twoFactorPassword) {
+      toast.error("Please enter password to confirm");
+      return;
+    }
+    const res = updateProfileData({ twoFactorEnabled: false });
+    if (res.success) {
+      toast.success("Two-Factor Authentication disabled.");
+      setTwoFactorPassword('');
+      setIs2FADisableOpen(false);
+    } else {
+      toast.error(res.error || "Failed to disable 2FA");
+    }
+  };
+
+  const handleRevokeSession = (sessionId) => {
+    setRevokingSessionId(sessionId);
+    setTimeout(() => {
+      setSessions(prev => prev.filter(s => s.id !== sessionId));
+      setRevokingSessionId(null);
+      toast.success("Device session revoked successfully");
+    }, 800);
+  };
+
+  const handleRevokeAllSessions = () => {
+    setIsRevokingAll(true);
+    setTimeout(() => {
+      setSessions(prev => prev.filter(s => s.current));
+      setIsRevokingAll(false);
+      toast.success("All other sessions revoked");
+    }, 1000);
+  };
+
+  const handleCopySecretKey = () => {
+    navigator.clipboard.writeText("GRVT-Y7KJ-9PLX-ZQ2B");
+    toast.success("Secret key copied to clipboard!");
+  };
+
   /* ── Editing & Preview Toggles ── */
   const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   /* ── Sync with context ── */
   useEffect(() => {
     if (profileData) {
-      setName(profileData.name || '');
-      setEmail(profileData.email || '');
-      setPhoto(profileData.profilePhoto || '');
-      setBranch(profileData.branch || '');
-      setYear(profileData.year || '');
-      setTargetCGPA(userData?.target?.targetCGPA || profileData.targetCGPA || '');
-      setBio(profileData.bio || '');
-      setGradingSystem(profileData.gradingSystem || 'VIT Grading');
-      setEmailNotifications(profileData.emailNotifications !== undefined ? profileData.emailNotifications : true);
-      setTwoFactorEnabled(profileData.twoFactorEnabled !== undefined ? profileData.twoFactorEnabled : true);
+      const timer = setTimeout(() => {
+        setName(profileData.name || '');
+        setEmail(profileData.email || '');
+        setPhoto(profileData.profilePhoto || '');
+        setBranch(profileData.branch || '');
+        setYear(profileData.year || '');
+        setTargetCGPA(userData?.target?.targetCGPA || profileData.targetCGPA || '');
+        setBio(profileData.bio || '');
+        setGradingSystem(profileData.gradingSystem || 'VIT Grading');
+        setEmailNotifications(profileData.emailNotifications !== undefined ? profileData.emailNotifications : true);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [profileData, userData]);
 
@@ -203,12 +282,7 @@ export default function Profile() {
     toast.success(val ? "Email notifications enabled" : "Email notifications disabled");
   };
 
-  const handleTwoFactorToggle = (e) => {
-    const val = e.target.checked;
-    setTwoFactorEnabled(val);
-    updateProfileData({ twoFactorEnabled: val });
-    toast.success(val ? "Two-Factor Authentication enabled" : "Two-Factor Authentication disabled");
-  };
+
 
   const handleUpdatePassword = async (e) => {
     if (e) e.preventDefault();
@@ -266,7 +340,7 @@ export default function Profile() {
       toast.error("Please enter your password to confirm");
       return;
     }
-    
+
     if (isGuest) {
       toast.error("Guest accounts cannot be deleted");
       return;
@@ -635,7 +709,10 @@ export default function Profile() {
             </div>
 
             <div className="prof-field">
-              <label className="prof-label">Email Address</label>
+              <div className="prof-label-row">
+                <label className="prof-label">Email Address</label>
+                <span className="email-verified-tag-inline">Verified</span>
+              </div>
               <div className="prof-input-wrap">
                 <Mail size={15} className="prof-input-icon" />
                 <input
@@ -645,7 +722,6 @@ export default function Profile() {
                   readOnly
                   disabled
                 />
-                <span className="email-verified-tag">Verified</span>
               </div>
               <span className="prof-hint">Email is linked to your account and cannot be changed.</span>
             </div>
@@ -817,21 +893,13 @@ export default function Profile() {
               </div>
             </div>
 
-            <div className="prof-setting-row">
-              <div className="prof-setting-icon-wrapper icon-theme-violet">
-                <HelpCircle size={16} />
-              </div>
-              <div className="prof-setting-info">
-                <span className="prof-setting-title">Need Help?</span>
-                <span className="prof-setting-desc">Contact support for questions or assistance</span>
-              </div>
+            <div className="prof-support-action-container">
               <button
                 type="button"
-                className="prof-support-btn"
-                style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                className="prof-btn-support-full"
                 onClick={() => window.open('mailto:darshanedu2256@gmail.com', '_blank')}
               >
-                <Headphones size={13} /> Support
+                <Headphones size={15} /> Need Help? Contact Support
               </button>
             </div>
           </div>
@@ -867,25 +935,29 @@ export default function Profile() {
               />
             </div>
 
-            <div className="prof-setting-row">
-              <div className="prof-setting-icon-wrapper icon-theme-green">
+            <div
+              className="prof-setting-row prof-setting-clickable"
+              onClick={handleToggle2FA}
+              style={{ cursor: 'pointer' }}
+            >
+              <div className={`prof-setting-icon-wrapper icon-theme-green ${profileData.twoFactorEnabled ? 'active' : ''}`}>
                 <Shield size={16} />
               </div>
               <div className="prof-setting-info">
                 <span className="prof-setting-title">Two-Factor Authentication</span>
                 <span className="prof-setting-desc">Add an extra layer of security</span>
               </div>
-              <span className="status-text-coming-soon" style={{
-                color: '#f59e0b',
-                fontSize: '13px',
-                fontWeight: '500',
-                marginLeft: 'auto'
-              }}>
-                Coming Soon
+              <span className={`prof-setting-status-label ${profileData.twoFactorEnabled ? 'enabled' : 'disabled'}`}>
+                {profileData.twoFactorEnabled ? 'Enabled' : 'Disabled'}
               </span>
+              <ChevronRight size={16} className="prof-setting-chevron" />
             </div>
 
-            <div className="prof-setting-row">
+            <div
+              className="prof-setting-row prof-setting-clickable"
+              onClick={() => setIsSessionsOpen(true)}
+              style={{ cursor: 'pointer' }}
+            >
               <div className="prof-setting-icon-wrapper icon-theme-sky">
                 <Monitor size={16} />
               </div>
@@ -893,23 +965,25 @@ export default function Profile() {
                 <span className="prof-setting-title">Active Sessions</span>
                 <span className="prof-setting-desc">Manage your active sessions</span>
               </div>
-              <div className="status-badge-inline count-badge">1</div>
+              <div
+                className="status-badge-inline count-badge"
+                style={{
+                  marginLeft: 'auto',
+                  marginRight: '8px'
+                }}
+              >
+                {sessions.length}
+              </div>
+              <ChevronRight size={16} className="prof-setting-chevron" />
             </div>
 
-            <div className="prof-setting-row prof-setting-danger-row">
-              <div className="prof-setting-icon-wrapper icon-theme-red">
-                <Trash2 size={16} />
-              </div>
-              <div className="prof-setting-info">
-                <span className="prof-setting-title">Delete Account</span>
-                <span className="prof-setting-desc">Permanently delete your account</span>
-              </div>
+            <div className="prof-delete-action-container">
               <button
                 type="button"
-                className="btn-delete-account-styled"
+                className="prof-btn-delete-account-full"
                 onClick={() => setIsDeleteAccountOpen(true)}
               >
-                Delete
+                <Trash2 size={16} /> Delete Account
               </button>
             </div>
           </div>
@@ -942,7 +1016,7 @@ export default function Profile() {
         {/* Text stack */}
         <h3 className="divider-title">You're all set!</h3>
         <p className="divider-subtitle">Settings saved successfully.</p>
-        
+
         {/* Highlight row with side lines */}
         <div className="divider-highlight-row">
           <div className="highlight-line line-left" />
@@ -991,16 +1065,16 @@ export default function Profile() {
                   {/* Orbiting rings */}
                   <ellipse cx="50" cy="50" rx="36" ry="12" stroke="url(#shieldGrad)" strokeWidth="1" opacity="0.4" transform="rotate(-15 50 50)" />
                   <ellipse cx="50" cy="50" rx="42" ry="6" stroke="url(#shieldGrad)" strokeWidth="0.8" opacity="0.3" transform="rotate(10 50 50)" />
-                  
+
                   {/* Shield background */}
                   <path d="M50 15 C65 15, 78 22, 78 38 C78 62, 50 82, 50 85 C50 82, 22 62, 22 38 C22 22, 35 15, 50 15 Z" fill="rgba(99, 102, 241, 0.08)" stroke="url(#shieldGrad)" strokeWidth="2.5" filter="url(#shieldGlow)" />
-                  
+
                   {/* Padlock inside shield */}
                   <rect x="40" y="48" width="20" height="15" rx="3" fill="url(#shieldGrad)" />
                   <path d="M44 48 V42 C44 38.5, 46.5 36, 50 36 C53.5 36, 56 38.5, 56 42 V48" stroke="url(#shieldGrad)" strokeWidth="2" strokeLinecap="round" fill="none" />
                   <circle cx="50" cy="55" r="2" fill="#0b0f19" />
                   <line x1="50" y1="57" x2="50" y2="60" stroke="#0b0f19" strokeWidth="1.5" />
-                  
+
                   {/* Sparkle stars */}
                   <path d="M25 22 L26 25 L29 26 L26 27 L25 30 L24 27 L21 26 L24 25 Z" fill="#c084fc" opacity="0.7" />
                   <path d="M75 70 L76 72 L78 73 L76 74 L75 76 L74 74 L72 73 L74 72 Z" fill="#818cf8" opacity="0.8" />
@@ -1190,6 +1264,236 @@ export default function Profile() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* ═══ TWO-FACTOR SETUP MODAL ═══ */}
+      {is2FASetupOpen && createPortal(
+        <div className="prof-pwd-modal-backdrop" onClick={() => {
+          setIs2FASetupOpen(false);
+          setTwoFactorCode('');
+        }}>
+          <div className="prof-pwd-modal-container" onClick={(e) => e.stopPropagation()}>
+            <button className="prof-pwd-modal-close" onClick={() => {
+              setIs2FASetupOpen(false);
+              setTwoFactorCode('');
+            }} aria-label="Close modal">
+              <X size={18} />
+            </button>
+
+            <div className="prof-pwd-modal-header-row">
+              <div className="prof-pwd-illustration-wrap">
+                <div className="prof-pwd-illustration-glow" style={{ background: 'rgba(16, 185, 129, 0.15)' }} />
+                <ShieldCheck size={40} className="icon-green" style={{ color: '#10b981' }} />
+              </div>
+              <div className="prof-pwd-modal-header-text">
+                <h2>Set up 2-Factor Authentication</h2>
+                <p>Protect your account with a secondary verification code.</p>
+              </div>
+            </div>
+
+            <div className="twofactor-setup-content" style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="twofactor-qr-section" style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '16px', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '12px', border: '1px solid var(--card-border)' }}>
+                <svg width="100" height="100" viewBox="0 0 100 100" fill="currentColor" style={{ color: '#0f172a', background: 'white', padding: '6px', borderRadius: '8px', flexShrink: 0 }}>
+                  <rect x="0" y="0" width="20" height="20" fill="black" />
+                  <rect x="5" y="5" width="10" height="10" fill="white" />
+                  <rect x="80" y="0" width="20" height="20" fill="black" />
+                  <rect x="85" y="5" width="10" height="10" fill="white" />
+                  <rect x="0" y="80" width="20" height="20" fill="black" />
+                  <rect x="5" y="85" width="10" height="10" fill="white" />
+                  <rect x="30" y="10" width="10" height="10" fill="black" />
+                  <rect x="50" y="30" width="20" height="10" fill="black" />
+                  <rect x="10" y="40" width="10" height="20" fill="black" />
+                  <rect x="40" y="60" width="10" height="10" fill="black" />
+                  <rect x="70" y="50" width="15" height="15" fill="black" />
+                  <rect x="85" y="85" width="10" height="10" fill="black" />
+                  <rect x="35" y="80" width="15" height="10" fill="black" />
+                </svg>
+                <div className="twofactor-qr-text">
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Scan this QR code with Google Authenticator or Microsoft Authenticator</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255, 255, 255, 0.04)', padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--card-border)', width: 'fit-content' }}>
+                    <code style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)', letterSpacing: '1px' }}>GRVT-Y7KJ-9PLX-ZQ2B</code>
+                    <button type="button" onClick={handleCopySecretKey} style={{ background: 'none', border: 'none', color: '#818cf8', cursor: 'pointer', padding: 0, display: 'flex' }}>
+                      <Copy size={14} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <form onSubmit={handleVerifyEnable2FA} className="prof-pwd-modal-form" style={{ marginTop: '0' }}>
+                <div className="prof-field">
+                  <label className="prof-label">Verification Code</label>
+                  <div className="prof-input-wrap">
+                    <Shield size={15} className="prof-input-icon" />
+                    <input
+                      type="text"
+                      maxLength="6"
+                      className="prof-input"
+                      value={twoFactorCode}
+                      onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
+                      placeholder="Enter 6-digit code"
+                      required
+                      style={{ fontSize: '18px', letterSpacing: '4px', textAlign: 'center', fontWeight: 'bold' }}
+                    />
+                  </div>
+                </div>
+
+                <div className="prof-pwd-modal-actions" style={{ marginTop: '20px' }}>
+                  <button
+                    type="button"
+                    className="prof-pwd-btn-cancel"
+                    onClick={() => {
+                      setIs2FASetupOpen(false);
+                      setTwoFactorCode('');
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="prof-pwd-btn-submit" style={{ background: '#10b981', borderColor: '#34d399' }}>
+                    <ShieldCheck size={14} /> Verify & Enable
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* ═══ TWO-FACTOR DISABLE MODAL ═══ */}
+      {is2FADisableOpen && createPortal(
+        <div className="prof-pwd-modal-backdrop" onClick={() => {
+          setIs2FADisableOpen(false);
+          setTwoFactorPassword('');
+        }}>
+          <div className="prof-pwd-modal-container" onClick={(e) => e.stopPropagation()}>
+            <button className="prof-pwd-modal-close" onClick={() => {
+              setIs2FADisableOpen(false);
+              setTwoFactorPassword('');
+            }} aria-label="Close modal">
+              <X size={18} />
+            </button>
+
+            <div className="prof-pwd-modal-header-row" style={{ alignItems: 'flex-start' }}>
+              <div className="prof-setting-icon-wrapper icon-theme-red active" style={{ marginTop: '4px' }}>
+                <Shield size={24} />
+              </div>
+              <div className="prof-pwd-modal-header-text">
+                <h2 style={{ color: '#ef4444' }}>Disable Two-Factor Authentication</h2>
+                <p>Disabling 2FA reduces your account security. You will no longer be prompted for verification codes during login.</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleDisable2FA} className="prof-pwd-modal-form">
+              <div className="prof-field">
+                <label className="prof-label">Confirm Password</label>
+                <div className="prof-input-wrap">
+                  <Lock size={15} className="prof-input-icon" />
+                  <input
+                    type="password"
+                    className="prof-input"
+                    value={twoFactorPassword}
+                    onChange={(e) => setTwoFactorPassword(e.target.value)}
+                    placeholder="Enter your password to confirm"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="prof-pwd-modal-actions" style={{ marginTop: '24px' }}>
+                <button
+                  type="button"
+                  className="prof-pwd-btn-cancel"
+                  onClick={() => {
+                    setIs2FADisableOpen(false);
+                    setTwoFactorPassword('');
+                  }}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="prof-pwd-btn-submit" style={{ background: '#ef4444', borderColor: '#f87171', color: '#fff' }}>
+                  Disable 2FA
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* ═══ ACTIVE SESSIONS MANAGER MODAL ═══ */}
+      {isSessionsOpen && createPortal(
+        <div className="prof-pwd-modal-backdrop" onClick={() => setIsSessionsOpen(false)}>
+          <div className="prof-pwd-modal-container" style={{ maxWidth: '500px' }} onClick={(e) => e.stopPropagation()}>
+            <button className="prof-pwd-modal-close" onClick={() => setIsSessionsOpen(false)} aria-label="Close modal">
+              <X size={18} />
+            </button>
+
+            <div className="prof-pwd-modal-header-row">
+              <div className="prof-pwd-illustration-wrap" style={{ background: 'rgba(14, 165, 233, 0.1)' }}>
+                <Monitor size={24} style={{ color: '#0ea5e9' }} />
+              </div>
+              <div className="prof-pwd-modal-header-text">
+                <h2>Active Device Sessions</h2>
+                <p>Manage and audit your active logins across devices and browsers.</p>
+              </div>
+            </div>
+
+            <div className="sessions-list-container" style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {sessions.map(s => (
+                <div key={s.id} className="session-item" style={{ display: 'flex', alignItems: 'center', padding: '14px', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--card-border)', borderRadius: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                    <div className="session-icon-circle" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', background: s.current ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255, 255, 255, 0.05)', color: s.current ? '#10b981' : 'var(--text-muted)' }}>
+                      {s.type === 'pc' || s.type === 'laptop' ? <Laptop size={18} /> : <Smartphone size={18} />}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-main)' }}>{s.device}</span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Globe size={11} /> {s.location} • {s.date}
+                      </span>
+                    </div>
+                  </div>
+                  {s.current ? (
+                    <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#10b981', padding: '4px 8px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '6px' }}>Current</span>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={revokingSessionId === s.id}
+                      onClick={() => handleRevokeSession(s.id)}
+                      style={{ fontSize: '12px', background: 'none', border: 'none', color: '#ef4444', fontWeight: '600', cursor: 'pointer', opacity: revokingSessionId === s.id ? 0.5 : 1 }}
+                    >
+                      {revokingSessionId === s.id ? 'Revoking...' : 'Revoke'}
+                    </button>
+                  )}
+                </div>
+              ))}
+
+              {sessions.length > 1 && (
+                <button
+                  type="button"
+                  className="btn-revoke-all"
+                  disabled={isRevokingAll}
+                  onClick={handleRevokeAllSessions}
+                  style={{
+                    marginTop: '8px',
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '10px',
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                    background: 'rgba(239, 68, 68, 0.08)',
+                    color: '#ef4444',
+                    fontWeight: '700',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {isRevokingAll ? 'Revoking...' : 'Revoke All Other Sessions'}
+                </button>
+              )}
+            </div>
           </div>
         </div>,
         document.body

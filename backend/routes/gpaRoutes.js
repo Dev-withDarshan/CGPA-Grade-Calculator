@@ -42,4 +42,40 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
+// POST /api/gpa/save-simulator — Protected
+router.post('/save-simulator', authMiddleware, async (req, res) => {
+  try {
+    const { simulatorData } = req.body;
+
+    const result = await User.findByIdAndUpdate(
+      req.userId,
+      { $set: { simulatorData } },
+      { new: true }
+    );
+
+    if (!result) return res.status(404).json({ error: 'User not found.' });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Save Simulator Error:', err);
+    res.status(500).json({ error: 'Server error.' });
+  }
+});
+
+// GET /api/gpa/simulator — Protected
+router.get('/simulator', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId, { simulatorData: 1 });
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+
+    res.json({
+      success: true,
+      simulatorData: user.simulatorData
+    });
+  } catch (err) {
+    console.error('Load Simulator Error:', err);
+    res.status(500).json({ error: 'Failed to load simulator data.' });
+  }
+});
+
 export default router;

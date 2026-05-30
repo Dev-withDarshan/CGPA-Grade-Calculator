@@ -3,7 +3,7 @@ import { Plus, Trash2, Award, ChevronDown, ChevronUp, Zap, Edit3, BarChart2, Che
 import './Calculator.css';
 import './OverallCalculator.css';
 import AnimatedNumber from './AnimatedNumber';
-import { parseVtopText } from './SemesterCalculator';
+import { parseVtopText } from '../utils/vtopParser';
 import { MagneticButton } from './Spotlight';
 import {
   GRADE_MAP,
@@ -67,7 +67,7 @@ function migrateSemesters(initialData) {
 function SemesterCard({ sem, index, semesters, onUpdate, onRemove, expanded, onToggle }) {
   const effectiveGPA = getSemesterGPA(sem);
   const effectiveCredits = getSemesterCredits(sem);
-  const safeSubjects = sem.subjects || []; // Guaranteed safe access
+  const safeSubjects = useMemo(() => sem.subjects || [], [sem.subjects]); // Guaranteed safe access
 
   // --- Mode switching logic ---
   const handleModeSwitch = useCallback((newMode) => {
@@ -161,10 +161,13 @@ function SemesterCard({ sem, index, semesters, onUpdate, onRemove, expanded, onT
 
     const delta = predictedCGPA - currentCGPA;
     const isPositive = delta > 0;
-    const isNegative = delta < 0;
+    const isActive = sem.manualGPA !== '' && Number(sem.manualGPA) === hypotheticalGPA;
 
     return (
-      <div className={`prediction-card w-full h-full flex flex-col justify-between ${isBest ? 'prediction-card-best' : ''}`}>
+      <div 
+        className={`prediction-card w-full h-full flex flex-col justify-between ${isBest ? 'prediction-card-best' : ''} ${isActive ? 'prediction-card-active' : ''}`}
+        onClick={() => onUpdate(sem.id, { manualGPA: hypotheticalGPA.toString() })}
+      >
         {isBest && <span className="best-badge">Best</span>}
         <div className="prediction-gpa">{hypotheticalGPA.toFixed(2)} GPA</div>
         <div className="prediction-cgpa-row">
@@ -265,6 +268,7 @@ function SemesterCard({ sem, index, semesters, onUpdate, onRemove, expanded, onT
                 <div className="quick-field">
                   <label>GPA Achieved</label>
                   <input
+                    id={`gpa-input-${sem.id}`}
                     type="number"
                     className={`input-field ${gpaError ? 'input-error' : ''}`}
                     min="0"
@@ -289,13 +293,26 @@ function SemesterCard({ sem, index, semesters, onUpdate, onRemove, expanded, onT
                   {renderPrediction(8.00)}
                   {renderPrediction(9.50)}
                   {renderPrediction(10.00, true)}
-                  <div className="prediction-card custom-prediction w-full h-full flex flex-col justify-between">
-                    <Edit3 size={16} className="custom-icon" />
-                    <div className="custom-prediction-text">
-                      <span className="custom-prediction-title">Custom GPA</span>
-                      <span className="custom-prediction-desc">Enter any value</span>
-                    </div>
-                  </div>
+                  {(() => {
+                    const customGPA = sem.manualGPA;
+                    const isCustomActive = customGPA !== '' && !['8.00', '9.50', '10.00', '8', '9.5', '10'].includes(customGPA.toString());
+                    return (
+                      <div 
+                        className={`prediction-card custom-prediction w-full h-full flex flex-col justify-between ${isCustomActive ? 'prediction-card-active' : ''}`}
+                        onClick={() => document.getElementById(`gpa-input-${sem.id}`)?.focus()}
+                      >
+                        <Edit3 size={16} className="custom-icon" />
+                        <div className="custom-prediction-text">
+                          <span className="custom-prediction-title">
+                            {isCustomActive ? `${Number(customGPA).toFixed(2)} GPA` : 'Custom GPA'}
+                          </span>
+                          <span className="custom-prediction-desc">
+                            {isCustomActive ? 'Selected' : 'Enter any value'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
                 <div className="simulator-insight">
                   <Info size={14} />
@@ -512,21 +529,8 @@ export default function OverallCalculator({ initialData, onChange }) {
     return migrated || [createSemester(1)];
   });
 
-  const [isCompact, setIsCompact] = useState(false);
   const [expandedCardId, setExpandedCardId] = useState(null);
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsCompact(prev => {
-        if (window.scrollY > 120) return true;
-        if (window.scrollY < 40) return false;
-        return prev;
-      });
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // --- Compute overall CGPA ---
   const currentOverallCgpa = useMemo(() => {

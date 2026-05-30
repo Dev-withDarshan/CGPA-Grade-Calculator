@@ -1,0 +1,222 @@
+﻿
+> gravital@0.0.0 lint
+> eslint .
+
+
+C:\Users\darsh\Downloads\Git_Hub\GraVITal\backend\middleware\authMiddleware.js
+  20:12  error  'err' is defined but never used  no-unused-vars
+
+C:\Users\darsh\Downloads\Git_Hub\GraVITal\backend\server.js
+  54:25  error  'next' is defined but never used  no-unused-vars
+
+C:\Users\darsh\Downloads\Git_Hub\GraVITal\scripts\seed.js
+   1:8  error  'fs' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                 no-unused-vars
+  23:9  error  'password' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\darsh\Downloads\Git_Hub\GraVITal\scripts\test_gemini.js
+  1:8  error  'fs' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\darsh\Downloads\Git_Hub\GraVITal\src\components\AnalyzeModal.jsx
+   73:9  error    'consistency' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                       no-unused-vars
+  144:6  warning  React Hook useMemo has a missing dependency: 'targetCGPAError'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\darsh\Downloads\Git_Hub\GraVITal\src\components\AuthScreen.jsx
+   71:11  error  'theme' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u        no-unused-vars
+   71:18  error  'toggleTheme' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+   95:16  error  'err' is defined but never used                                                              no-unused-vars
+  113:16  error  'err' is defined but never used                                                              no-unused-vars
+
+C:\Users\darsh\Downloads\Git_Hub\GraVITal\src\components\Dashboard.jsx
+  11:11  error    'currentUser' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                   no-unused-vars
+  11:24  error    'logout' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                        no-unused-vars
+  12:47  error    'saveStatus' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                    no-unused-vars
+  47:14  error    'err' is defined but never used                                                                                               no-unused-vars
+  54:3   error    React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+  57:6   warning  React Hook useEffect has a missing dependency: 'handleSave'. Either include it or remove the dependency array                 react-hooks/exhaustive-deps
+
+C:\Users\darsh\Downloads\Git_Hub\GraVITal\src\components\GradeSimulator.jsx
+  70:58  warning  React Hook useMemo has a missing dependency: 'computeGPA'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  71:62  warning  React Hook useMemo has a missing dependency: 'computeGPA'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\darsh\Downloads\Git_Hub\GraVITal\src\components\LandingPage.jsx
+  10:42  error  'Component' is assigned a value but never used  no-unused-vars
+
+C:\Users\darsh\Downloads\Git_Hub\GraVITal\src\components\Navbar.jsx
+  47:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  45 |   // Close mobile menu on route change
+  46 |   useEffect(() => {
+> 47 |     setMobileMenuOpen(false);
+     |     ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  48 |     setDropdownOpen(false);
+  49 |   }, [location.pathname]);
+  50 |    react-hooks/set-state-in-effect
+
+C:\Users\darsh\Downloads\Git_Hub\GraVITal\src\components\OverallCalculator.jsx
+   70:9   warning  The 'safeSubjects' logical expression could make the dependencies of useCallback Hook (at line 126) change on every render. To fix this, wrap the initialization of 'safeSubjects' in its own useMemo() Hook  react-hooks/exhaustive-deps
+   70:9   warning  The 'safeSubjects' logical expression could make the dependencies of useCallback Hook (at line 130) change on every render. To fix this, wrap the initialization of 'safeSubjects' in its own useMemo() Hook  react-hooks/exhaustive-deps
+   70:9   warning  The 'safeSubjects' logical expression could make the dependencies of useCallback Hook (at line 136) change on every render. To fix this, wrap the initialization of 'safeSubjects' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  164:11  error    'isNegative' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                    no-unused-vars
+  515:10  error    'isCompact' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                     no-unused-vars
+
+C:\Users\darsh\Downloads\Git_Hub\GraVITal\src\components\Profile.jsx
+   34:63  error  'currentUser' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 no-unused-vars
+   35:18  error  'toggleTheme' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 no-unused-vars
+   55:10  error  'twoFactorEnabled' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            no-unused-vars
+   75:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  73 |   useEffect(() => {
+  74 |     if (profileData) {
+> 75 |       setName(profileData.name || '');
+     |       ^^^^^^^ Avoid calling setState() directly within an effect
+  76 |       setEmail(profileData.email || '');
+  77 |       setPhoto(profileData.profilePhoto || '');
+  78 |       setBranch(profileData.branch || '');  react-hooks/set-state-in-effect
+  206:9   error  'handleTwoFactorToggle' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       no-unused-vars
+
+C:\Users\darsh\Downloads\Git_Hub\GraVITal\src\components\ScoreFlow.jsx
+   41:21  error    'currentUser' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        no-unused-vars
+   60:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  58 |   useEffect(() => {
+  59 |     if (scoreFlowData && !vtopData) {
+> 60 |       setVtopData(scoreFlowData);
+     |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  61 |     }
+  62 |   }, [scoreFlowData]);
+  63 |  react-hooks/set-state-in-effect
+   62:6   warning  React Hook useEffect has a missing dependency: 'vtopData'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/exhaustive-deps
+  971:39  error    '_' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      no-unused-vars
+
+C:\Users\darsh\Downloads\Git_Hub\GraVITal\src\components\SemesterCalculator.jsx
+   16:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+   41:11  error  'slNo' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                            no-unused-vars
+   73:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  183:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  507:88  error  'projectedCgpa' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                   no-unused-vars
+  589:27  error  'qualLabel' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                       no-unused-vars
+
+C:\Users\darsh\Downloads\Git_Hub\GraVITal\src\components\Spotlight.jsx
+   31:47  error  Error: Cannot access variable before it is declared
+
+`tick` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  29 |       Math.abs(current.current.scale - target.current.scale) > 0.005
+  30 |     ) {
+> 31 |       frameId.current = requestAnimationFrame(tick);
+     |                                               ^^^^ `tick` accessed before it is declared
+  32 |     }
+  33 |   }, []);
+  34 |
+
+  14 |   const lerp = (a, b, t) => a + (b - a) * t;
+  15 |
+> 16 |   const tick = useCallback(() => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 17 |     const el = ref.current;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 18 |     if (!el) return;
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 32 |     }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 33 |   }, []);
+     | ^^^^^^^^^^ `tick` is declared here
+  34 |
+  35 |   const onMove = useCallback((e) => {
+  36 |     const el = ref.current;                         react-hooks/immutability
+  122:47  error  Error: Cannot access variable before it is declared
+
+`tick` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  120 |       Math.abs(current.current.scale - target.current.scale) > 0.005
+  121 |     ) {
+> 122 |       frameId.current = requestAnimationFrame(tick);
+      |                                               ^^^^ `tick` accessed before it is declared
+  123 |     }
+  124 |   }, []);
+  125 |
+
+  104 |   const lerp = (a, b, t) => a + (b - a) * t;
+  105 |
+> 106 |   const tick = useCallback(() => {
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 107 |     const el = ref.current;
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 108 |     if (!el) return;
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 123 |     }
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 124 |   }, []);
+      | ^^^^^^^^^^ `tick` is declared here
+  125 |
+  126 |   const onMove = useCallback((e) => {
+  127 |     const el = ref.current;  react-hooks/immutability
+
+C:\Users\darsh\Downloads\Git_Hub\GraVITal\src\context\AuthContext.jsx
+    6:14  error    Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react-refresh/only-export-components
+    9:14  error    Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react-refresh/only-export-components
+  147:6   warning  React Hook useEffect has a missing dependency: 'loadProfileData'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react-hooks/exhaustive-deps
+  153:15  error    'profilePhoto' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        no-unused-vars
+  161:15  error    'profilePhoto' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        no-unused-vars
+  176:38  error    Error: Cannot access variable before it is declared
+
+`compressImage` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  174 |
+  175 |     try {
+> 176 |       const compressedBase64 = await compressImage(file, 300);
+      |                                      ^^^^^^^^^^^^^ `compressImage` accessed before it is declared
+  177 |       const res = await authFetch(`${API}/api/profile/upload-photo`, {
+  178 |         method: 'POST',
+  179 |         body: JSON.stringify({ file: compressedBase64 })
+
+  200 |
+  201 |   // Canvas image compression helper
+> 202 |   const compressImage = (file, maxSize = 300) => {
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 203 |     return new Promise((resolve, reject) => {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 204 |       const img = new Image();
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 222 |     });
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 223 |   };
+      | ^^^^^ `compressImage` is declared here
+  224 |
+  225 |   // ΓöÇΓöÇ Load GPA data from backend ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  226 |   const loadUserData = async () => {  react-hooks/immutability
+  300:6   warning  React Hook useEffect has missing dependencies: 'API', 'loadScoreFlowData', and 'loadUserData'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react-hooks/exhaustive-deps
+  364:6   warning  React Hook useCallback has missing dependencies: 'loadScoreFlowData' and 'loadUserData'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-hooks/exhaustive-deps
+
+C:\Users\darsh\Downloads\Git_Hub\GraVITal\src\context\DashboardTabContext.jsx
+  17:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\darsh\Downloads\Git_Hub\GraVITal\src\context\ThemeContext.jsx
+  6:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\darsh\Downloads\Git_Hub\GraVITal\src\utils\ocrParser.js
+  40:12  error  'parseErr' is defined but never used  no-unused-vars
+
+Γ£û 54 problems (43 errors, 11 warnings)
+

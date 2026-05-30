@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   Calculator, 
   TrendingUp, 
@@ -88,7 +88,7 @@ export function WhyGraVITalGrid() {
       {/* Capsule Comparison Tagline */}
       <div className="prof-comparison-capsule">
         <span>
-          Unlike generic CGPA calculators, <strong className="brand-accent">GraVITal</strong> helps you <strong className="action-accent">plan</strong>, <strong className="action-accent">predict</strong>, and <strong className="action-accent">optimize</strong> your academic future.
+          Unlike generic CGPA calculators, <strong className="brand-accent">GraVITal</strong> helps you <strong className="action-accent">strategize</strong>, <strong className="action-accent">forecast</strong>, and <strong className="action-accent">achieve</strong> your academic future.
         </span>
       </div>
 
@@ -295,9 +295,10 @@ export function Footer() {
       </div>
       <div className="prof-footer-right">
         <div className="prof-footer-links">
-          <a href="#privacy" onClick={(e) => e.preventDefault()}>Privacy Protocol</a>
-          <a href="#terms" onClick={(e) => e.preventDefault()}>GraVITal Terms</a>
-          <a href="mailto:darshanedu2256@gmail.com">System Support</a>
+          <Link to="/help">System Guide</Link>
+          <Link to="/privacy">Privacy Protocol</Link>
+          <Link to="/terms">GraVITal Terms</Link>
+          <Link to="/support">Support Orbit</Link>
         </div>
         <div className="prof-footer-socials">
           <a href="https://www.instagram.com/_darshan2256?igsh=bjhpemsyNDh6emgz" target="_blank" rel="noopener noreferrer" className="prof-social-link" aria-label="Instagram">

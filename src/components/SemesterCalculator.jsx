@@ -2,222 +2,9 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Plus, Trash2, UploadCloud, Loader2, ChevronDown, ChevronUp, Settings, Award, BarChart3, BookOpen, FlaskConical, Info, RotateCcw, Sparkles } from 'lucide-react';
 import { scanImageForSubjects } from '../utils/ocrParser';
+import { parseVtopText, parseVtopTimetable, parseVTOPData } from '../utils/vtopParser';
 import AnimatedNumber from './AnimatedNumber';
 import './Calculator.css';
-
-const COURSE_TYPES = [
-  "Theory Only",
-  "Lab Only",
-  "Online Course",
-  "Embedded Theory and Lab",
-  "Soft Skill"
-];
-
-export function parseVtopText(text) {
-  const lines = text.split("\n");
-  const VALID_GRADES = ['S', 'A', 'B', 'C', 'D', 'E', 'F', 'N'];
-
-  const subjects = [];
-
-  lines.forEach(line => {
-    const trimmed = line.trim();
-    if (!/^\d+/.test(trimmed)) return; // only rows starting with number
-
-    const tokens = trimmed.split(/\s+/);
-    if (tokens.length < 9) return; // ignore incomplete rows
-
-    // 👉 Extract from RIGHT
-    const grade = tokens[tokens.length - 1].toUpperCase();
-
-    // Validate grade
-    if (!VALID_GRADES.includes(grade)) {
-      return; // Skip non-graded or invalid grade rows (like P)
-    }
-
-    const c = parseFloat(tokens[tokens.length - 4]); // Credits (C)
-    if (isNaN(c)) return;
-
-    // 👉 LEFT SIDE
-    const slNo = tokens[0];
-    const courseCode = tokens[1];
-
-    // 👉 MIDDLE PART (title + type)
-    const middle = tokens.slice(2, tokens.length - 7).join(" ");
-
-    let courseType = "";
-    let courseTitle = middle;
-
-    for (let type of COURSE_TYPES) {
-      if (middle.includes(type)) {
-        courseType = type;
-        courseTitle = middle.replace(type, "").trim();
-        break;
-      }
-    }
-
-    const isLab = courseType === "Lab Only" || courseCode.endsWith("P") || courseTitle.toLowerCase().includes("lab");
-    const type = isLab ? "lab" : "theory";
-
-    subjects.push({
-      id: crypto.randomUUID(),
-      name: courseTitle,
-      credits: c,
-      grade: grade,
-      type: type
-    });
-  });
-
-  return subjects;
-}
-
-export function parseVtopTimetable(text) {
-  const lines = text.split("\n");
-  const subjects = [];
-
-  const TIMETABLE_COURSE_TYPES = [
-    "Embedded Theory and Lab",
-    "Embedded Theory and Project",
-    "Embedded Lab and Project",
-    "Theory Only",
-    "Lab Only",
-    "Project Only",
-    "Online Course",
-    "Soft Skill"
-  ];
-
-  lines.forEach(line => {
-    const trimmed = line.trim();
-    if (!trimmed) return;
-
-    // Try parsing with tabs first
-    if (trimmed.includes("\t")) {
-      const tokens = trimmed.split("\t");
-      if (tokens.length >= 10) {
-        const courseCode = tokens[2]?.trim();
-        const courseTitle = tokens[3]?.trim();
-        const courseType = tokens[4]?.trim();
-        const credits = parseFloat(tokens[9]?.trim());
-
-        if (courseCode && courseTitle && !isNaN(credits)) {
-          const isLab = courseType === "Lab Only" || courseCode.endsWith("P") || courseTitle.toLowerCase().includes("lab");
-          const type = isLab ? "lab" : "theory";
-
-          subjects.push({
-            id: crypto.randomUUID(),
-            name: courseTitle,
-            credits: credits,
-            grade: 'S',
-            type: type
-          });
-          return;
-        }
-      }
-    }
-
-    // Fallback: If no tabs, split by regex / spaces
-    const codeMatch = trimmed.match(/\b([A-Z]{3,4}\d{3,4}[A-Z]?)\b/i);
-    if (!codeMatch) return;
-
-    const courseCode = codeMatch[1].toUpperCase();
-    const codeIndex = trimmed.indexOf(codeMatch[1]);
-
-    let foundType = "";
-    let foundTypeIdx = -1;
-
-    for (let type of TIMETABLE_COURSE_TYPES) {
-      const idx = trimmed.toLowerCase().indexOf(type.toLowerCase());
-      if (idx !== -1 && idx > codeIndex) {
-        foundType = type;
-        foundTypeIdx = idx;
-        break;
-      }
-    }
-
-    let courseTitle = "";
-    let credits = 3.0;
-
-    if (foundTypeIdx !== -1) {
-      courseTitle = trimmed.substring(codeIndex + courseCode.length, foundTypeIdx).trim();
-      const afterType = trimmed.substring(foundTypeIdx + foundType.length).trim();
-      const tokensAfter = afterType.split(/\s+/);
-      if (tokensAfter.length >= 5) {
-        const potentialCredits = parseFloat(tokensAfter[4]);
-        if (!isNaN(potentialCredits)) {
-          credits = potentialCredits;
-        }
-      }
-    } else {
-      const afterCode = trimmed.substring(codeIndex + courseCode.length).trim();
-      const tokens = afterCode.split(/\s+/);
-      if (tokens.length > 0) {
-        let titleParts = [];
-        for (let token of tokens) {
-          if (/^\d/.test(token) || token.includes("+")) {
-            break;
-          }
-          titleParts.push(token);
-        }
-        courseTitle = titleParts.join(" ").trim();
-      }
-    }
-
-    if (!courseTitle) {
-      courseTitle = courseCode;
-    }
-
-    const isLab = foundType === "Lab Only" || courseCode.endsWith("P") || courseTitle.toLowerCase().includes("lab");
-    const type = isLab ? "lab" : "theory";
-
-    subjects.push({
-      id: crypto.randomUUID(),
-      name: courseTitle,
-      credits: credits,
-      grade: 'S',
-      type: type
-    });
-  });
-
-  return subjects;
-}
-
-export function parseVTOPData(text) {
-  // Step 1: Split into blocks using course code pattern
-  const blocks = text.split(/\n(?=\d+\s*\n)/); // split at Sl.No
-
-  const subjects = [];
-
-  blocks.forEach(block => {
-    // Extract CODE + NAME
-    const courseMatch = block.match(/([A-Z]{4}\d{3}[A-Z])\s*-\s*(.+)/);
-
-    if (!courseMatch) return;
-
-    const code = courseMatch[1];
-    let name = courseMatch[2].trim();
-
-    // Extract TYPE
-    let type = "theory";
-    if (/\(.*Lab.*\)/i.test(block)) {
-      type = "lab";
-    }
-
-    // Extract CREDITS (first decimal number in block after course code to avoid matching digits inside the code)
-    const afterCode = block.substring(block.indexOf(code) + code.length);
-    const creditMatch = afterCode.match(/\b\d+(\.\d+)?\b/);
-    const credits = creditMatch ? parseFloat(creditMatch[0]) : 0;
-
-    subjects.push({
-      id: crypto.randomUUID(),
-      name,
-      credits,
-      grade: 'S',
-      type,
-      code
-    });
-  });
-
-  return subjects;
-}
 
 // VIT Grading System
 const GRADE_POINTS = {
@@ -229,10 +16,6 @@ const DEFAULT_LAB = Array.from({ length: 1 }, () => ({ id: crypto.randomUUID(), 
 
 const ROW_COLORS = ['#EC4899', '#F97316', '#14B8A6', '#6366F1', '#A855F7', '#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#8B5CF6'];
 
-const getGradeQuality = (grade) => {
-  const map = { S: 'Excellent', A: 'Very Good', B: 'Good', C: 'Average', D: 'Below Avg', E: 'Poor', F: 'Fail', N: 'Absent' };
-  return map[grade] || '';
-};
 
 const getGpaQuality = (gpa) => {
   const g = parseFloat(gpa);
@@ -504,7 +287,7 @@ export default function SemesterCalculator({ initialData, overallData, onChange,
     return { credits: cr, points: pts, count: subjects.length, gpa: cr === 0 ? 0 : pts / cr };
   };
 
-  const { cgpa: currentCgpa, totalCredits: currentCredits, totalPoints: currentPoints, projectedCgpa } = computeStats();
+  const { cgpa: currentCgpa, totalCredits: currentCredits } = computeStats();
   const theoryStats = sectionStats(theorySubjects);
   const labStats = sectionStats(labSubjects);
 
@@ -586,7 +369,6 @@ export default function SemesterCalculator({ initialData, overallData, onChange,
                   {subjects.map((sub, i) => {
                     const gp = GRADE_POINTS[sub.grade] ?? 0;
                     const contrib = Number(sub.credits) * gp;
-                    const qualLabel = getGradeQuality(sub.grade);
                     const color = ROW_COLORS[i % ROW_COLORS.length];
                     const initials = sub.name ? sub.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : (isTheory ? 'T' : 'L') + (i + 1);
 
@@ -812,10 +594,6 @@ export default function SemesterCalculator({ initialData, overallData, onChange,
             <span className="sem-bottom-num">{currentCredits}</span>
             <span className="sem-bottom-label">Total Credits</span>
           </div>
-          <div className="sem-bottom-stat">
-            <span className="sem-bottom-num">{currentPoints.toFixed(2)}</span>
-            <span className="sem-bottom-label">Total Points</span>
-          </div>
           <div className="sem-bottom-gpa">
             <Award size={20} />
             <div>
@@ -1000,43 +778,43 @@ export default function SemesterCalculator({ initialData, overallData, onChange,
                         <tr>
                           <td>1</td>
                           <td>General Freshers</td>
-                          <td>BCSE101E - Computer Programming: Python<br/>( Embedded Theory )</td>
+                          <td>BCSE101E - Computer Programming: Python<br />( Embedded Theory )</td>
                           <td>1.0</td>
                           <td>Foundation Core</td>
                           <td>Regular</td>
                           <td>VL2024250107560</td>
-                          <td>TCC2 -<br/>PRP124</td>
-                          <td>SELVA RANI B -<br/>SCORE</td>
+                          <td>TCC2 -<br />PRP124</td>
+                          <td>SELVA RANI B -<br />SCORE</td>
                           <td>28-Jul-2024 04:39</td>
-                          <td>29-Jul-2024<br/>- Manual</td>
+                          <td>29-Jul-2024<br />- Manual</td>
                           <td>Registered and Approved</td>
                         </tr>
                         <tr>
                           <td>2</td>
                           <td>General Freshers</td>
-                          <td>BCSE101E - Computer Programming: Python<br/>( Embedded Lab )</td>
+                          <td>BCSE101E - Computer Programming: Python<br />( Embedded Lab )</td>
                           <td>2.0</td>
                           <td>Foundation Core</td>
                           <td>Regular</td>
                           <td>VL2024250107561</td>
-                          <td>L9+L10+L13+L14 -<br/>SJT218</td>
-                          <td>SELVA RANI B -<br/>SCORE</td>
+                          <td>L9+L10+L13+L14 -<br />SJT218</td>
+                          <td>SELVA RANI B -<br />SCORE</td>
                           <td>28-Jul-2024 04:39</td>
-                          <td>29-Jul-2024<br/>- Manual</td>
+                          <td>29-Jul-2024<br />- Manual</td>
                           <td>Registered and Approved</td>
                         </tr>
                         <tr>
                           <td>3</td>
                           <td>General Freshers</td>
-                          <td>BEEE102L - Basic Electrical and Electronics Engineering<br/>( Theory Only )</td>
+                          <td>BEEE102L - Basic Electrical and Electronics Engineering<br />( Theory Only )</td>
                           <td>3.0</td>
                           <td>Foundation Core</td>
                           <td>Regular</td>
                           <td>VL2024250106644</td>
-                          <td>G2+TG2 -<br/>PRP124</td>
-                          <td>ARUN N -<br/>SELECT</td>
+                          <td>G2+TG2 -<br />PRP124</td>
+                          <td>ARUN N -<br />SELECT</td>
                           <td>28-Jul-2024 04:39</td>
-                          <td>29-Jul-2024<br/>- Manual</td>
+                          <td>29-Jul-2024<br />- Manual</td>
                           <td>Registered and Approved</td>
                         </tr>
                       </tbody>

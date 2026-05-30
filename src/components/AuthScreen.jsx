@@ -1,9 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
 import { LogIn, User, Eye, EyeOff, ShieldCheck, Mail, Lock, Sun, Moon, TrendingUp, Rocket, BarChart2, Sparkles, ArrowRight, ChevronRight } from 'lucide-react';
+import toast from 'react-hot-toast';
 import './AuthScreen.css';
+import { Footer } from './WhyGraVITal';
+
+const GoogleIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '10px', flexShrink: 0 }}>
+    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05" />
+    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+  </svg>
+);
 
 const AstronautIcon = ({ size = 92, ...props }) => (
   <svg
@@ -66,8 +76,13 @@ export default function AuthScreen() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { login, signup, loginAsGuest } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  // Google Sign-In Simulation States
+  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
+  const [googleEmail, setGoogleEmail] = useState('');
+  const [googleError, setGoogleError] = useState('');
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const { login, signup, loginAsGuest, googleLogin } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -91,7 +106,7 @@ export default function AuthScreen() {
         } else {
           navigate('/dashboard');
         }
-      } catch (err) {
+      } catch {
         setError('An unexpected error occurred');
       } finally {
         setLoading(false);
@@ -109,7 +124,7 @@ export default function AuthScreen() {
         } else {
           navigate('/dashboard');
         }
-      } catch (err) {
+      } catch {
         setError('An unexpected error occurred');
       } finally {
         setLoading(false);
@@ -120,6 +135,46 @@ export default function AuthScreen() {
   const handleGuestLogin = () => {
     loginAsGuest();
     navigate('/dashboard');
+  };
+
+  const handleGoogleSubmit = async (e) => {
+    e.preventDefault();
+    setGoogleError('');
+
+    if (!googleEmail.trim()) {
+      setGoogleError('Enter an email address.');
+      return;
+    }
+
+    const trimmedEmail = googleEmail.trim().toLowerCase();
+    const parts = trimmedEmail.split('@');
+    if (parts.length < 2) {
+      setGoogleError('Enter a valid email address.');
+      return;
+    }
+
+    const domain = parts[1];
+    const allowedDomains = ['vitstudent.ac.in', 'vit.ac.in', 'vit.edu', 'vitstudent.edu'];
+    if (!allowedDomains.includes(domain)) {
+      setGoogleError('Only VIT student/faculty mail IDs are authorized to log in.');
+      return;
+    }
+
+    setGoogleLoading(true);
+    try {
+      const res = await googleLogin(trimmedEmail);
+      if (res.success) {
+        toast.success('Successfully connected Google account!');
+        setIsGoogleModalOpen(false);
+        navigate('/dashboard');
+      } else {
+        setGoogleError(res.error || 'Google login failed.');
+      }
+    } catch {
+      setGoogleError('Cannot connect to authentication server.');
+    } finally {
+      setGoogleLoading(false);
+    }
   };
 
   return (
@@ -309,6 +364,23 @@ export default function AuthScreen() {
                 <div className="divider-line"></div>
               </div>
 
+              {/* Google Sign-In Option */}
+              <div className="google-login-option">
+                <button
+                  type="button"
+                  className="google-login-btn-premium"
+                  onClick={() => {
+                    setGoogleEmail('');
+                    setGoogleError('');
+                    setIsGoogleModalOpen(true);
+                  }}
+                >
+                  <GoogleIcon />
+                  <span className="google-text-span">Continue with Google (VIT Mail ID Only!)</span>
+                  <ChevronRight size={18} className="chevron-icon" />
+                </button>
+              </div>
+
               {/* Capsule Continue as Guest & Footer Toggle */}
               <div className="auth-card-footer">
                 <div className="guest-login-option">
@@ -360,7 +432,81 @@ export default function AuthScreen() {
             </div>
           </div>
         </div>
+        <Footer />
       </div>
+
+      {/* ─── GOOGLE SIGN-IN MODAL SIMULATION ─── */}
+      {isGoogleModalOpen && (
+        <div className="google-modal-overlay" onClick={() => setIsGoogleModalOpen(false)}>
+          <div className="google-signin-card" onClick={(e) => e.stopPropagation()}>
+            <div className="google-header">
+              {/* Google multi-colored G logo */}
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05" />
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+              </svg>
+              <h2 className="google-headline">Sign in</h2>
+              <p className="google-subheading">to continue to GraVITal</p>
+            </div>
+
+            <form onSubmit={handleGoogleSubmit} className="google-body">
+              <div className="google-input-wrapper">
+                <input
+                  type="email"
+                  className="google-input-field"
+                  placeholder=" "
+                  value={googleEmail}
+                  onChange={(e) => setGoogleEmail(e.target.value)}
+                  disabled={googleLoading}
+                  autoFocus
+                />
+                <label className="google-input-label">Email address</label>
+              </div>
+
+              {googleEmail.includes('@') && (
+                <div className="google-domain-badge">
+                  <span>Target: {googleEmail.split('@')[1]}</span>
+                </div>
+              )}
+
+              <p className="google-note-text">
+                To support academic database sync and verification, Google account login is <strong>restricted exclusively to VIT student and faculty mail IDs</strong> (e.g. <code>@vitstudent.ac.in</code>).
+              </p>
+
+              {googleError && (
+                <div className="google-error-alert">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  <span>{googleError}</span>
+                </div>
+              )}
+
+              <div className="google-actions">
+                <button
+                  type="button"
+                  className="google-cancel-btn"
+                  onClick={() => setIsGoogleModalOpen(false)}
+                  disabled={googleLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="google-next-btn"
+                  disabled={googleLoading}
+                >
+                  {googleLoading ? <span className="loading-spinner-small" style={{ width: '16px', height: '16px', borderTopColor: '#ffffff' }} /> : 'Next'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
